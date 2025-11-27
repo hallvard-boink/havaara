@@ -1,0 +1,88 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+BilRedigeringsomraade --> BildeAvBilenMultiBildeKomponent : Finn frem \nbilder av bilen
+BildeAvBilenMultiBildeKomponent --> BildeOpplastingsKomponent : Vis bilde \nav bilen
+BildeOpplastingsKomponent --> BildeVisningsKomponent : Vis bilde \nav bilen
+BildeAvBilenMultiBildeKomponent --> PlassIndikatorKomponent : Vis antall biler\n og plass
+PlassIndikatorKomponent -->BildeAvBilenMultiBildeKomponent : Finn frem neste \nbilde av bilen
+
+BildeOpplastingsKomponent --> BildeAvBilenMultiBildeKomponent : Lagre filnavn i bilde
+BildeAvBilenMultiBildeKomponent -->BildeAvBilenService : Lagre bilde
+
+
+class BildeAvBilenService {
+    ArrayList<T> finnAlle();
+    T finnEtterUUID(String uuid);
+    T opprettEntitet();
+    T opprettEntitetMedForelder();
+    void lagre(T entity);
+    void lagreAlle(ArrayList<T> alEntities);
+    void slett(T entity);
+    void slettAlle();
+    RedigeringsomraadeAktig<T> hentRedigeringsomraadeAktig();
+}
+
+class BilService {
+    ArrayList<T> finnAlle();
+    T finnEtterUUID(String uuid);
+    T opprettEntitet();
+    T opprettEntitetMedForelder();
+    void lagre(T entity);
+    void lagreAlle(ArrayList<T> alEntities);
+    void slett(T entity);
+    void slettAlle();
+    RedigeringsomraadeAktig<T> hentRedigeringsomraadeAktig();
+}
+
+class PlassIndikatorKomponent {
+    void oppdaterLayout(Integer lengde, Integer startplassIndeks);
+    --
+    void oppdaterPlass()
+    void flyttFremover()
+    void flyttBakover()
+}
+
+class BildeAvBilenMultiBildeKomponent<T, P>{
+    void visBildeNr (Integer plassNr);
+    void oppdaterForNyEntitet(ArrayList<T> bilder);
+    T hentVistBilde();
+    ==
+    (Filopplastingsegnet)
+
+    void lagringEtterOpplastingEllerValgAvFil(String nyttFilnavnString);
+    String getFilnavn();
+    Filkategori getFilkategori();
+}
+
+class BilRedigeringsomraade {
+    Binder<T> hentBinder();
+    T getEntitet();
+    void setEntitet(T entitet);
+    void instansOppdaterEkstraRedigeringsfelter();
+    void lesBean();
+    void skrivBean();
+}
+
+class BildeOpplastingsKomponent {
+    void oppdaterInnholdMedBytes(byte[] data);
+    void oppdaterInnholdMedstrFilnavn(String filnavnString);
+    --
+    void slettBildeFraServer()
+    void kobleFraBildeOgLagre()
+    void velgBildeFraServer()
+    void lastOppBilde()
+
+}
+
+class BildeVisningsKomponent {
+    void oppdaterInnholdMedBytes(byte[] data);
+    void oppdaterInnholdMedstrFilnavn(String filnavnString);
+}
+
+
+
+
+
+@enduml

@@ -1,0 +1,134 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+MasterDetailView --> EntitetRedigeringsomraade : Lagre bil, \nSlett bil, \nFinn frem bil
+MasterDetailView --> EntitetService :  Lagre bil, \nSlett bil, \nFinn frem bil
+
+EntitetRedigeringsomraade --> MultiBildeKomponentMal : Finn frem \nbilder av bilen
+
+MultiBildeKomponentMal --> PlassIndikatorKomponent : Vis antall biler\n og plass
+MultiBildeKomponentMal --> BildeRedigeringsomraade : Vis bilde med \ninfo
+MultiBildeKomponentMal -->BildeentitetService : Lagre bilde
+
+BildeRedigeringsomraade --> BildeOpplastingsKomponent : Vis bilde \nav bilen
+BildeRedigeringsomraade --> MultiBildeKomponentMal : Lagre etter opplasting
+
+PlassIndikatorKomponent -->MultiBildeKomponentMal : Finn frem neste \nbilde av bilen
+
+BildeOpplastingsKomponent --> BildeVisningsKomponent : Vis bilde \nav bilen
+BildeOpplastingsKomponent --> BildeRedigeringsomraade : Lagre filnavn i bilde
+
+
+
+
+class MasterDetailView {
+    Grid med søkefunksjon
+
+    lagre()
+    slett()
+}
+
+class MultiBildeKomponentMal<Bildeklasse, Forelderklasse extends EntitetMedBarnAktig<Bildeklasse>>{
+    ArrayList<Bildeklasse>
+
+    init(MultiBildekomponentTypeEnum type, EntitetRedigeringsomraade<Forelderklasse>
+    void visBildeNr (Integer plassNr);
+    void oppdaterForNyEntitet(ArrayList<T> bilder);
+    lagreBilde()
+    slettBilde()
+    opprettNyttBilde() //Denne henter forelder fra EntitetRedigeringsomraade
+
+}
+note right: Bildeentitet kan være med eller uten forelder
+
+note as N1
+    Bilder kan være:
+    **1.Del av en annen entitet** (lagret som filnavn i et felt)
+        Bruk bare BildeOpplastingsKomponent, og implementer
+        Filopplastingsegnet i redigeringsområdet
+
+    **2.En frittstående entitet**
+        Ekstender AbstraktBildeentitet
+        Bruk BildeRedigeringsomraade direkte
+
+    **3.En entitet med relasjonskobling til en forelder**
+        Ekstender MultiBildeKomponentMal
+
+end note
+
+note as N2
+
+
+end note
+
+class BildeRedigeringsomraade<Bildeklasse> {
+    Redigeringsfelter for Bildeentiteten
+
+    --
+    **Filopplastingsegnet**
+    settFilnavn()
+}
+
+
+class PlassIndikatorKomponent {
+    void oppdaterLayout(Integer lengde, Integer startplassIndeks);
+    --
+    void oppdaterPlass()
+    void flyttFremover()
+    void flyttBakover()
+}
+
+
+class EntitetRedigeringsomraade {
+    Redigeringsfelter for entiteten
+    Aktiv entitet
+    --
+    getEntitet() / setEntitet()
+    void instansOppdaterEkstraRedigeringsfelter();
+    void lesBean();
+    void skrivBean();
+}
+
+class BildeOpplastingsKomponent {
+    void slettBildeFraServer()
+    void kobleFraBildeOgLagre()
+    void velgBildeFraServer()
+    void lastOppBilde()
+    Dialog velgEllerEndreNavn
+    Dialog forminskBilde
+}
+note right: Når denne er brukt direkte i et redigeringsområde, \nmå den implementere Filopplastingsegnet
+
+class BildeVisningsKomponent{
+    (en en Image)
+    void oppdaterInnholdMedBytes(byte[] data);
+    void oppdaterInnholdMedstrFilnavn(String filnavnString);
+}
+
+class BildeentitetService {
+    ArrayList<Bildeklasse> finnAlle();
+    Bildeklasse finnEtterUUID(String uuid);
+    Bildeklasse opprettEntitet();
+    Bildeklasse opprettEntitetMedForelder();
+    void lagre(T entity);
+    void lagreAlle(ArrayList<T> alEntities);
+    void slett(T entity);
+    void slettAlle();
+    RedigeringsomraadeAktig<Bildeklasse> hentRedigeringsomraadeAktig();
+}
+
+class EntitetService {
+    ArrayList<Bildeklasse> finnAlle();
+    Bildeklasse finnEtterUUID(String uuid);
+    Bildeklasse opprettEntitet();
+    Bildeklasse opprettEntitetMedForelder();
+    void lagre(T entity);
+    void lagreAlle(ArrayList<T> alEntities);
+    void slett(T entity);
+    void slettAlle();
+    RedigeringsomraadeAktig<Bildeklasse> hentRedigeringsomraadeAktig();
+}
+
+
+
+@enduml

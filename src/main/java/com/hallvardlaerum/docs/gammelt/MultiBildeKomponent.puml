@@ -1,0 +1,100 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+
+
+class BildeAvBilenMultiBildeKomponent extends MultiBildeKomponentMal<BildeAvBilen, Bil> {
+    public BildeAvBilenMultiBildeKomponent(RedigeringsomraadeAktig<Bil> redigeringsomraade, MultiBildeEgnet multiBildeEgnet,
+                                           BildeAvBilenService bildeAvBilenService);
+}
+BilRedigeringsomraade --> BildeAvBilenMultiBildeKomponent : Settes inn manuelt
+BildeAvBilenService --> BildeAvBilenMultiBildeKomponent : Settes inn manuelt
+
+class BilService implements EntitetserviceAktig<Bil> {
+    public BilService(BilRepository bilRepository, BilRedigeringsomraade bilRedigeringsomraade);
+}
+
+BilRedigeringsomraade --> BilServce : Injection
+
+
+interface EntitetserviceAktig<T extends AbstraktEntitetAktig> {
+    ArrayList<T> finnAlle();
+    T opprettEntitet();
+    void lagre(T entity);
+    void lagreAlle(ArrayList<T> alEntities);
+    void slett(T entity);
+    void flush();
+    void opprettTestdata();
+    void slettAlle();
+    T finnEtterUUID(String uuid);
+    void behandleSpesialfeltVedImport(Object entitet, Field field, String nyVerdi);
+
+    String hentEntitetsnavn();
+    String hentVisningsnavn(T entitet);
+
+    ArrayList<T> finnAlleRedigertDatoTidMellom(LocalDateTime fraDatoTid, LocalDateTime tilDatoTid);
+    T finnSistRedigert();
+
+    RedigeringsomraadeAktig<T> hentRedigeringsomraadeAktig();
+    T opprettEntitetMedForelder();
+}
+
+
+class BildeAvBilenService implements EntitetserviceAktig<BildeAvBilen> {
+}
+
+interface PlassIndikatorKomponentAktig {
+    void oppdaterLayout(Integer lengde, Integer startplassIndeks);
+}
+
+
+class PlassIndikatorKomponent implements PlassIndikatorKomponentAktig {
+
+}
+
+abstract class MultiBildeKomponentMal<T extends AbstraktBildeentitet, P extends AbstraktEntitet> implements MultiBildeKomponentAktig, FilopplastingsEgnet{
+
+}
+
+interface MultiBildeKomponentAktig<T extends AbstraktBildeentitet> {
+    void visBildeNr (Integer plassNr);
+    void oppdaterForNyEntitet(ArrayList<T> bilder);
+    T hentVistBilde();
+}
+
+
+interface MultiBildeEgnet<T extends AbstraktBildeentitet> {
+    ArrayList<T> hentBilder();
+}
+
+
+class BildeRedigeringsKomponent implements BildeVisningsKomponentAktig{
+public BildeRedigeringsKomponent(RedigeringsomraadeAktig<? extends AbstraktEntitet> redigeringsomraade, FilopplastingsEgnet redigeringsomraadeSomfilopplastingsEgnet,
+                                     EntitetserviceAktig<? extends AbstraktBildeentitet> bildeentitetservice) {
+}
+
+
+
+
+interface BildeVisningsKomponentAktig {
+    void oppdaterInnholdMedBytes(byte[] data);
+    void oppdaterInnholdMedstrFilnavn(String filnavnString);
+}
+
+class BildeVisningsKomponent extends Image implements BildeVisningsKomponentAktig {
+
+}
+
+
+interface FilopplastingsEgnet {
+    void lagringEtterOpplastingEllerValgAvFil(String nyttFilnavnString);
+    String getFilnavn();
+    Filkategori getFilkategori();
+}
+
+
+
+
+
+@enduml

@@ -1,0 +1,161 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+
+'----------------
+'Klasser med uuid
+'----------------
+
+
+
+interface  MultiBildeEgnet<T extends AbstraktBildeentitet>{
+}
+
+class BilRedigeringsomraade extends Redigeringsomraademal<Bil> implements RedigeringsomraadeAktig, MultiBildeEgnet<BildeAvBilen> {
+}
+
+BilRedigeringsomraade ..> BilService : Injection
+
+BildeRedigeringsKomponent --> MultiBildeKomponentMal : Brukes
+
+interface RedigeringsomraadeAktig<T extends AbstraktEntitetAktig> {
+
+
+    Binder<T> hentBinder();
+    T getEntitet();
+    void setEntitet(T entitet);
+
+    void instansOppdaterEkstraRedigeringsfelter();
+    void opprettFelter();
+    void byggOppBinder();
+
+    void lesBean();
+    void skrivBean();
+    void setFokusComponent(Component fokusComponent);
+    void fokuser();
+    void aktiver(Boolean skalAktiveres);
+}
+
+class BildeRedigeringsKomponent extends VerticalLayout implements BildeVisningsKomponentAktig {
+}
+
+interface BildeVisningsKomponentAktig {
+    void oppdaterInnholdMedBytes(byte[] data);
+    void oppdaterInnholdMedstrFilnavn(String filnavnString);
+}
+
+interface MultiBildeKomponentAktig {
+    void visBildeNr (Integer plassNr);
+    void oppdaterForNyEntitet(ArrayList<T> bilder);
+    T hentVistBilde();
+}
+
+abstract class MultiBildeKomponentMal<T extends AbstraktBildeentitet, P extends AbstraktEntitet> extends VerticalLayout implements MultiBildeKomponentAktig, FilopplastingsEgnet  {
+    BildeRedigeringsKomponent bildeRedigeringsKomponent;
+}
+
+interface FilopplastingsEgnet {
+
+    void lagringEtterOpplastingEllerValgAvFil(String nyttFilnavnString);
+    String getFilnavn();
+    Filkategori getFilkategori();
+
+}
+
+interface AbstraktEntitetAktig {
+    UUID getUUID();
+    void setUuid(UUID uuid):
+
+    LocalDateTime getOpprettetDatoTid();
+    void setOpprettetDatoTid(LocalDateTime opprettetDatoTid);
+    LocalDateTime getRedigertDatoTid();
+    void setRedigertDatoTid(LocalDateTime redigertDatoTid);
+
+        String hentBeskrivendeNavn();
+}
+
+
+abstract class AbstraktEntitet implements AbstraktEntitetAktig{
+
+}
+
+abstract class MasterDetailViewmal<T extends AbstraktEntitet> implements ViewMalaktig{
+    T entitet
+    'Grid<T> grid
+    'HorizontalLayout redigeringsknapperLayout
+    'HorizontalLayout soekeknapperLayout
+
+    'opprettLayout()
+}
+
+abstract class MainViewMal implements MainViewAktig {
+
+}
+
+class MainView extends MainViewMal{
+    MainView(BilService bilservice, MedlemService medlemservice)
+    (her opprettes Redigeringsomraader og Views knyttet til hver entitetservice)
+}
+
+
+class MedlemView extends MasterDetailViewmal<Medlem>{
+    public MedlemView(MedlemService medlemservice, BilService bilservice);
+
+    // henter redigeringsomraader fra medlemservice og bilservice
+}
+
+
+class MedlemService implements EntitetServiceAktig<Medlem> {
+
+    MedlemService(MedlemRepository medlemRepository, MedlemRedigeringsomraade medlemRedigeringsomraade);
+    Backupkyklop.hent().leggTilEntitetservice(this);
+
+    public MedlemRedigeringsomraade getMedlemRedigeringsomraade()
+}
+
+class MedlemRedigeringsomraade extends Redigeringsomraademal<Medlem> implements FilopplastingsEgnet {
+
+}
+
+interface RedigeringsomraadeAktig<T extends AbstraktEntitet> {
+}
+
+
+MedlemRedigeringsomraade ..> MedlemService : Injection
+
+
+class BilService implements EntitetServiceAktig<Bil> {
+
+}
+
+class Bil extends AbstraktEntitet {
+}
+
+class BildeAvBilen extends AbstraktBildeEntitet {
+}
+
+BildeAvBilen --* Bil
+
+abstract class AbstraktBildeEntitet {
+
+}
+
+interface EntitetServiceAktig<T extends AbstraktEntitet> {
+
+}
+
+
+interface ViewMalaktig<T extends AbstraktEntitet> {
+        'void opprettLayout (EntitetserviceAktig<T> entitetserviceAktig, Redigeringsomraademal<T> redigeringsomraade);
+        '<C extends Component> C leggTilRedigeringsfelt(C component);
+        'void instansOpprettGrid();
+        'void instansOpprettFelter();
+        'void instansByggOppBinder();
+        'void instansOpprettFilterFelter();
+        'void oppdaterSoekeomraade_finnAlle(T entitet);
+        'void instansOppdaterEkstraRedigeringsfelter();
+}
+
+
+@enduml
