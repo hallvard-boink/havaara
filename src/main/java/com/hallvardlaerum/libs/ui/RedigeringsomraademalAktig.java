@@ -18,7 +18,6 @@ public interface  RedigeringsomraademalAktig<T extends EntitetAktig>  {
 
     void setFokusComponent(Component fokusComponent);
 
-
     FormLayout hentFormLayoutFraTab(Integer tabIndex);
     FormLayout hentFormLayoutFraTab(String tabTittelString);
 
@@ -26,10 +25,12 @@ public interface  RedigeringsomraademalAktig<T extends EntitetAktig>  {
     void settView(ViewmalAktig<?> delAvView); //Overflødig?
     ViewmalAktig<?> hentView(); //Overflødig?
 
+    void leggTilRedigeringsfelter(Component... components);
+
     <C extends Component> C leggTilRedigeringsfelt(C komponent);
-    <C extends Component> C leggTilRedigeringsfelt(C komponent, Integer tabIndex);
-    <C extends Component> C leggTilRedigeringsfelt(C komponent, String tabTittelString);
-    <C extends Component> C leggTilRedigeringsfelt(C komponent, Tab tab);
+    <C extends Component> C leggTilRedigeringsfelt(Integer tabIndex, C komponent);
+    <C extends Component> C leggTilRedigeringsfelt(String tabTittelString, C komponent);
+    <C extends Component> C leggTilRedigeringsfelt(Tab tab, C komponent);
     <C extends Component> C leggTilAndrefelterOver(C component);
     <C extends Component> C leggTilAndrefelterUnder(C komponent);
 

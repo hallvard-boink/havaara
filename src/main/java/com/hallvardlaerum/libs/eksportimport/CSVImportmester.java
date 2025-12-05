@@ -1,13 +1,13 @@
 package com.hallvardlaerum.libs.eksportimport;
 
 import com.hallvardlaerum.libs.database.EntitetAktig;
+import com.hallvardlaerum.libs.database.EntitetserviceAktig;
 import com.hallvardlaerum.libs.database.EntitetserviceMedForelderAktig;
 import com.hallvardlaerum.libs.database.EnumAktig;
+import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
 import com.hallvardlaerum.libs.felter.Datokyklop;
 import com.hallvardlaerum.libs.felter.HelTallMester;
 import com.hallvardlaerum.libs.felter.TekstKyklop;
-import com.hallvardlaerum.libs.database.EntitetserviceAktig;
-import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -26,7 +26,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * <h1>CSVImportkyklop</h1>
@@ -43,9 +46,8 @@ import java.util.*;
  * Bruk CSVImportMester i stedet, som er et vanlig objekt, med constructor.
  */
 
-@Deprecated
-public class CSVImportkyklop implements CSVImportkyklopAktig {
-    private static CSVImportkyklop csvImportkyklop;
+
+public class CSVImportmester implements CSVImportmesterAktig {
     private final Integer maksAntallEntiteterIApplikasjonen = 100;
     private ArrayList<String> arraylistFeltnavnTilImport;
     private String delimiter = ";";
@@ -67,10 +69,32 @@ public class CSVImportkyklop implements CSVImportkyklopAktig {
     private Button buttonKjoerImport;
     private Button buttonAvbrytImport;
 
+
+    public CSVImportmester(CSVImportassistentAktig csvImportassistentAktig) {
+        this.csvImportassistentAktig = csvImportassistentAktig;
+        opprettDialogboks();
+    }
+
+    public CSVImportmester() {
+        opprettDialogboks();
+    }
+
+    @Override
+    public CSVImportassistentAktig getCsvImportassistentAktig() {
+        return csvImportassistentAktig;
+    }
+
+    @Override
+    public void setCsvImportassistentAktig(CSVImportassistentAktig csvImportassistentAktig) {
+        this.csvImportassistentAktig = csvImportassistentAktig;
+    }
+
+    @Override
     public String getLesCharsetString() {
         return lesCharsetString;
     }
 
+    @Override
     public void setLesCharsetString(String lesCharsetString) {
         this.lesCharsetString = lesCharsetString;
     }
@@ -107,7 +131,14 @@ public class CSVImportkyklop implements CSVImportkyklopAktig {
         buttonKjoerImport = new Button("Kjør import");
         buttonKjoerImport.setEnabled(false);
         buttonKjoerImport.addClickListener(e -> {
-            CSVImportkyklop.hent().importerFraArrayListMedStrenger(alInnholdImport);
+            if (csvImportassistentAktig!=null) {
+                csvImportassistentAktig.forberedImport();
+            }
+            importerFraArrayListMedStrenger(alInnholdImport);
+            if (csvImportassistentAktig!=null) {
+                csvImportassistentAktig.ryddOppEtterImport();
+            }
+
             importdialog.close();
             opprettDialogboks();
         });
@@ -635,25 +666,6 @@ public class CSVImportkyklop implements CSVImportkyklopAktig {
     }
 
 
-    private CSVImportkyklop() {
-        opprettDialogboks();
-
-    }
-
-    public static CSVImportkyklop hent() {
-        if (csvImportkyklop == null) {
-            csvImportkyklop = new CSVImportkyklop();
-        }
-        return csvImportkyklop;
-    }
-
-    public CSVImportassistentAktig getCsvKonverteringsAktig() {
-        return csvImportassistentAktig;
-    }
-
-    public void setCsvKonverteringsAktig(CSVImportassistentAktig csvImportassistentAktig) {
-        this.csvImportassistentAktig = csvImportassistentAktig;
-    }
 
 
 }

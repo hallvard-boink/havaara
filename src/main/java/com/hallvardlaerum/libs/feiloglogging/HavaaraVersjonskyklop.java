@@ -12,7 +12,14 @@ public class HavaaraVersjonskyklop extends Versjonskyklopmal{
 
     @Override
     public void byggOppVersjoner() {
-        super.leggTilVersjon("1.7.0", "2025-11-27","Havaara i helt eget prosjekt",
+        super.leggTilVersjon("1.7.2","2025-05-12","Allvitekyklop","Har tatt i bruk allvitekyklop for mer kontrollert initiering, " +
+                "men før endret constructor til alle maler i havaara.");
+        super.leggTilVersjon("1.7.1", "2025-11-17","CSVImportMester",
+                "Tilpasningsmuligheten for CSVImportkyklop hang igjen mellom ulike bruksscenarier, som medførte " +
+                        "at importdataene havnet i feil databasetabell. Gikk vekk fra singletonmønsteret og brukte vanlig objekt " +
+                        "istedet. Har @Deprecated i overgangen, for å unngå å bryte alt samtidig.");
+
+        super.leggTilVersjon("1.7.0", "2025-11-26","Havaara i helt eget prosjekt",
                 "Det viste seg å være upraktisk å ha havaara som modul i et multimodulprosjekt sammen med testkode. " +
                         "Mye arbeid med å oppdatere testkoden, som var kopi av blaahvalen. Hadde ebslading som testprosjekt før, men da måtte " +
                         "jeg vedlikeholde mye testkode for å teste det som var relevant, og jeg måtte uansett kjøre install og recompile " +

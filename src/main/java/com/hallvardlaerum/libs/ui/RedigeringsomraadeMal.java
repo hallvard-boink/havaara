@@ -33,8 +33,8 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
     private final String hovedtabnavnString="Hoved";
 
     public RedigeringsomraadeMal() {
-        binder = new Binder<>();
         opprettHovedlayout();
+        binder = new Binder<>();
     }
 
     private void opprettHovedlayout(){
@@ -95,6 +95,7 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
     @Override
     public FormLayout hentFormLayoutFraTab(String tabTittelString){
         if(tabSheet==null) { // Ingen tab er opprettet, siden TabSheet uansett er null
+            tabSheet = new TabSheet();
             hentFormLayoutFraTab(opprettTab(tabTittelString));
         }
 
@@ -181,12 +182,13 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
         }
     }
 
+    @Override
     public void leggTilRedigeringsfelter(Component... components) {
         leggTilRedigeringsfelter(hovedtabnavnString, components);
     }
 
 
-    private <C extends Component> C leggTilRedigeringsfelt_faktisk(C komponent, FormLayout formLayout) {
+    private <C extends Component> C leggTilRedigeringsfelt_faktisk(FormLayout formLayout, C komponent)  {
         formLayout.add(komponent);
         if (komponent instanceof DatePicker) {
             Datokyklop.hent().fiksDatoformat((DatePicker) komponent);
@@ -197,42 +199,47 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
     }
 
 
+
+
     @Override
     public <C extends Component> C leggTilRedigeringsfelt(C komponent) {
-        return leggTilRedigeringsfelt_faktisk(komponent,formLayout);
+        if (formLayout==null) {
+            formLayout = hentFormLayoutFraTab(hovedtabnavnString);
+        }
+        return leggTilRedigeringsfelt_faktisk(formLayout, komponent);
     }
 
-
-    public <C extends Component> C leggTilRedigeringsfelt(C komponent, Integer tabIndex) {
+    @Override
+    public <C extends Component> C leggTilRedigeringsfelt(Integer tabIndex, C komponent) {
         if (komponent==null || tabIndex==null) {return null;}
 
         FormLayout formLayout = hentFormLayoutFraTab(tabIndex);
         if (formLayout==null) {
             return null;
         } else {
-            return leggTilRedigeringsfelt_faktisk(komponent,formLayout);
+            return leggTilRedigeringsfelt_faktisk(formLayout, komponent);
         }
     }
 
     @Override
-    public <C extends Component> C leggTilRedigeringsfelt(C komponent, String tabTittelString) {
+    public <C extends Component> C leggTilRedigeringsfelt(String tabTittelString, C komponent) {
         if (komponent==null || tabTittelString==null) {return null;}
         FormLayout formLayout = hentFormLayoutFraTab(tabTittelString);
         if (formLayout==null) {
             return null;
         } else {
-            return leggTilRedigeringsfelt_faktisk(komponent,formLayout);
+            return leggTilRedigeringsfelt_faktisk(formLayout, komponent);
         }
     }
 
     @Override
-    public <C extends Component> C leggTilRedigeringsfelt(C komponent, Tab tab) {
+    public <C extends Component> C leggTilRedigeringsfelt( Tab tab, C komponent) {
         if (komponent==null || tab==null) {return null;}
         FormLayout formLayout = hentFormLayoutFraTab(tab);
         if (formLayout==null) {
             return null;
         } else {
-            return leggTilRedigeringsfelt_faktisk(komponent,formLayout);
+            return leggTilRedigeringsfelt_faktisk(formLayout, komponent);
         }
     }
 
@@ -267,6 +274,9 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
 
     @Override
     public Binder<T> hentBinder() {
+        if (binder==null) {
+            binder = new Binder<>();
+        }
         return binder;
     }
 

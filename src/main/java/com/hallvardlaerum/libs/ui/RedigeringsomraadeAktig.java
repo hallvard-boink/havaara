@@ -31,9 +31,9 @@ public interface RedigeringsomraadeAktig<T extends EntitetAktig> {
         ViewmalAktig<?> hentView();
         void settView(ViewmalAktig<?> view);
         <C extends Component> C leggTilRedigeringsfelt(C komponent);
-        <C extends Component> C leggTilRedigeringsfelt(C komponent, Integer tabIndex);
-        <C extends Component> C leggTilRedigeringsfelt(C komponent, String tabTittelString);
-        <C extends Component> C leggTilRedigeringsfelt(C komponent, Tab tab);
+        <C extends Component> C leggTilRedigeringsfelt(Integer tabIndex, C komponent);
+        <C extends Component> C leggTilRedigeringsfelt(String tabTittelString, C komponent);
+        <C extends Component> C leggTilRedigeringsfelt(Tab tab, C komponent);
         <C extends Component> C leggTilAndrefelterOver(C component);
         <C extends Component> C leggTilAndrefelterUnder(C komponent);
         Tab opprettTab(String tittelString);

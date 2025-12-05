@@ -43,9 +43,14 @@ public interface ViewmalAktig<Entitet extends EntitetAktig> {
     void instansOpprettGrid();
     void instansOpprettFilterFelter();
     void instansTilpassNyopprettetEntitet();
+    void instansAktiverKnapperadRedigeringsfelt(Boolean aktiver);
+
+    void oppdaterSoekeomraade();
 
     void oppdaterSoekeomraade_finnAlle(Entitet entitet);
     void oppdaterSoekeomraadeEtterRedigeringAvEntitet();
+
+    void oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(Entitet entitet);
 
     ViewCRUDStatusEnum getCRUDStatus();
 

@@ -1,9 +1,6 @@
 package com.hallvardlaerum.libs.ui;
 
-import com.hallvardlaerum.libs.database.AbstraktEntitet;
-import com.hallvardlaerum.libs.database.EntitetserviceAktig;
-import com.hallvardlaerum.libs.database.EntityFilterSpecification;
-import com.hallvardlaerum.libs.database.SearchCriteria;
+import com.hallvardlaerum.libs.database.*;
 import com.hallvardlaerum.libs.eksportimport.CSVEksportkyklop;
 import com.hallvardlaerum.libs.eksportimport.CSVImportkyklop;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
@@ -75,7 +72,6 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
     private H2 vinduTittel;
 
     public MasterDetailViewmal() {
-
     }
 
     @Override
@@ -91,6 +87,12 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
     @Override
     public void instansTilpassNyopprettetEntitet() {
         //ingenting
+    }
+
+    @Override
+    public void instansAktiverKnapperadRedigeringsfelt(Boolean aktiverBoolean) {
+        lagreButton.setEnabled(aktiverBoolean);
+        slettButton.setEnabled(aktiverBoolean);
     }
 
     public Entitet hentEntitet(){
@@ -362,11 +364,6 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
 
 
 
-
-
-
-
-
     private void opprettRedigeringsknapper(){
 
         nyButton = new Button("Ny");
@@ -471,11 +468,13 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
             redigeringsomraade.lesBean();
             redigeringsomraade.instansOppdaterEkstraRedigeringsfelter();
             redigeringsomraade.aktiver(false);
+            instansAktiverKnapperadRedigeringsfelt(false);
 
         } else {
             redigeringsomraade.lesBean();
             redigeringsomraade.instansOppdaterEkstraRedigeringsfelter();
             redigeringsomraade.aktiver(true);
+            instansAktiverKnapperadRedigeringsfelt(true);
             redigeringsomraade.fokuser();
 
         }
@@ -545,6 +544,24 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
 
     }
 
+    @Override
+    public ViewCRUDStatusEnum getCRUDStatus() {
+        return viewCRUDStatus;
+    }
+
+    @Override
+    public void oppdaterSoekeomraade(){
+        if (grid.getDataProvider() instanceof ListDataView) {
+            grid.setItems(entitetserviceAktig.finnAlle());
+        } else {
+            settFilter();
+        }
+
+        if (redigeringsomraade.getEntitet()!=null) {
+            grid.select(redigeringsomraade.getEntitet());
+        }
+    }
+
     private void scrollTilValgtRad(){
         if (!grid.isDetailsVisible(redigeringsomraade.getEntitet())){
             if (grid.getDataProvider() instanceof GridListDataView<?>) {
@@ -576,24 +593,27 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
 
     /**
      * Brukes etter at entiteter er lagt til fra andre steder, f.eks. Dialogbokser
+     * Erstatt med oppdaterSoekeomraade
      * @param entitet
      */
+    @Deprecated
     @Override
     public void oppdaterSoekeomraade_finnAlle(Entitet entitet){
+        oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(entitet);
+    }
+
+    @Override
+    public void oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(Entitet entitet) {
         redigeringsomraade.setEntitet(entitet);
-        grid.setItems(entitetserviceAktig.finnAlle());
-        grid.getDataProvider().refreshAll();
+        if (grid.getGenericDataView() instanceof ListDataView<?,?>) {
+            grid.setItems(entitetserviceAktig.finnAlle());
+            grid.getDataProvider().refreshAll();
+        } else {
+            settFilter();
+        }
         grid.select(redigeringsomraade.getEntitet());
 
         oppdaterAntallRaderNederstIGrid();
-    }
-
-
-
-
-    @Override
-    public ViewCRUDStatusEnum getCRUDStatus() {
-        return viewCRUDStatus;
     }
 
 

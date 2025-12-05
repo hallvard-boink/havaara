@@ -52,6 +52,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
 
 
 
+
     @Override
     public void initier(EntitetserviceAktig<Bildeklasse> bildeservice, EntitetserviceAktig<Forelderklasse> forelderService, Boolean erFrittstaaende) {
         this.bildeService = bildeservice;
@@ -66,8 +67,8 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
             }
             Loggekyklop.hent().loggINFO("Bilderedigeringsomraade ble initiert");
         }
-
     }
+
 
     public void visForelderCombobox(){
         forelderCombobox = super.leggTilRedigeringsfelt(new ComboBox<>("Forelder"));

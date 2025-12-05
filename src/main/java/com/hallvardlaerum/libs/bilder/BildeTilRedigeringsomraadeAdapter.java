@@ -49,18 +49,18 @@ public class BildeTilRedigeringsomraadeAdapter<Bildeklasse extends BildeentitetA
     }
 
     @Override
-    public <C extends Component> C leggTilRedigeringsfelt(C komponent, Integer tabIndex) {
-        return bilderedigeringsomraade.leggTilRedigeringsfelt(komponent, tabIndex);
+    public <C extends Component> C leggTilRedigeringsfelt(Integer tabIndex, C komponent) {
+        return bilderedigeringsomraade.leggTilRedigeringsfelt(tabIndex, komponent);
     }
 
     @Override
-    public <C extends Component> C leggTilRedigeringsfelt(C komponent, String tabTittelString) {
-        return bilderedigeringsomraade.leggTilRedigeringsfelt(komponent, tabTittelString);
+    public <C extends Component> C leggTilRedigeringsfelt(String tabTittelString, C komponent) {
+        return bilderedigeringsomraade.leggTilRedigeringsfelt(tabTittelString, komponent);
     }
 
     @Override
-    public <C extends Component> C leggTilRedigeringsfelt(C komponent, Tab tab) {
-        return bilderedigeringsomraade.leggTilRedigeringsfelt(komponent, tab);
+    public <C extends Component> C leggTilRedigeringsfelt(Tab tab, C komponent) {
+        return bilderedigeringsomraade.leggTilRedigeringsfelt(tab, komponent);
     }
 
     @Override
