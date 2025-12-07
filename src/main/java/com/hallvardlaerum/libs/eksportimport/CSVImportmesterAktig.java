@@ -20,7 +20,7 @@ public interface CSVImportmesterAktig {
 
     void setLesCharsetString(String lesCharsetString);
 
-    void velgImportfilOgKjoerImport(EntitetserviceAktig<?> entitetserviceAktig );
+    void velgImportfilOgKjoerImport(EntitetserviceAktig<?, ?> entitetserviceAktig );
     String hentUtKlassenavn(String strVerdi);
 
 }

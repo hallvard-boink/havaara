@@ -12,8 +12,12 @@ public class HavaaraVersjonskyklop extends Versjonskyklopmal{
 
     @Override
     public void byggOppVersjoner() {
-        super.leggTilVersjon("1.7.2","2025-05-12","Allvitekyklop","Har tatt i bruk allvitekyklop for mer kontrollert initiering, " +
+        super.leggTilVersjon("1.8.0","2025-12-06","Tomme constructorer for bean injection",
+                "Fjernet innhold i alle constructorer som skal injiseres, slik at Allvitekyklop ikke kræsjer, og fikk RedigerEntityDialog til å virke.");
+
+        super.leggTilVersjon("1.7.2","2025-12-05","Allvitekyklop","Har tatt i bruk allvitekyklop for mer kontrollert initiering, " +
                 "men før endret constructor til alle maler i havaara.");
+
         super.leggTilVersjon("1.7.1", "2025-11-17","CSVImportMester",
                 "Tilpasningsmuligheten for CSVImportkyklop hang igjen mellom ulike bruksscenarier, som medførte " +
                         "at importdataene havnet i feil databasetabell. Gikk vekk fra singletonmønsteret og brukte vanlig objekt " +

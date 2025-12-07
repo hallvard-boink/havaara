@@ -40,8 +40,8 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
     private Checkbox erHovedbildeCheckbox;
     private IntegerField rekkefoelgeIntegerField;
     private BildeOpplastingsKomponent bildeOpplastingsKomponent;
-    private EntitetserviceAktig<Bildeklasse> bildeService;
-    private EntitetserviceAktig<Forelderklasse> forelderService;
+    private EntitetserviceAktig<Bildeklasse,?> bildeService;
+    private EntitetserviceAktig<Forelderklasse,?> forelderService;
 
     private ComboBox<Forelderklasse> forelderCombobox;
     private Boolean erFrittstaaende;
@@ -54,7 +54,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
 
 
     @Override
-    public void initier(EntitetserviceAktig<Bildeklasse> bildeservice, EntitetserviceAktig<Forelderklasse> forelderService, Boolean erFrittstaaende) {
+    public void initier(EntitetserviceAktig<Bildeklasse,?> bildeservice, EntitetserviceAktig<Forelderklasse,?> forelderService, Boolean erFrittstaaende) {
         this.bildeService = bildeservice;
         this.forelderService = forelderService;
         this.erFrittstaaende = erFrittstaaende;

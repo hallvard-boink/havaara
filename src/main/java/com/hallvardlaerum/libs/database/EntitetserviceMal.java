@@ -1,6 +1,7 @@
 package com.hallvardlaerum.libs.database;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.verktoy.InitieringsEgnet;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,19 +15,20 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 
-public abstract class EntitetserviceMal<Entitet extends EntitetAktig, Repo extends JpaRepository<Entitet,UUID> & JpaSpecificationExecutor<Entitet> & RepositoryTillegg<Entitet>>
-        implements EntitetserviceAktig<Entitet>{
+public abstract class EntitetserviceMal<Entitet extends EntitetAktig,
+        Repo extends JpaRepository<Entitet,UUID> & JpaSpecificationExecutor<Entitet> & RepositoryTillegg<Entitet>>
+        implements EntitetserviceAktig<Entitet, Repo> {
     private Repo repository;
     private Class<Entitet> klasse;
     private EntityFilterSpecification<Entitet> entityFilterSpecification;
 
 
 
-    public EntitetserviceMal(Class<Entitet> klasse, Repo repository) {
+    @Override
+    public void initEntitetserviceMal(Class<Entitet> klasse, Repo repository) {
         this.repository = repository;
         this.klasse = klasse;
     }
-
 
 
     @Override

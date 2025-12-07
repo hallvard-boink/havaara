@@ -1,5 +1,8 @@
 package com.hallvardlaerum.libs.feiloglogging;
 
+/**
+ * Tilbyr noen nyttige prosedyrer som stadig gjentas ved testing
+ */
 public class TestMester {
 
     public static void logOgAssertInteger(String testverdiString, Integer forventetInteger, Integer utregnetInteger)  {

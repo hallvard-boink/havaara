@@ -4,7 +4,10 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandler;
 
 
-
+/**
+ * Hensikten med denne er å fange opp databasefeil. Imidlertid er den ikke i bruk ennå, fordi den gjør at
+ * vanlig feilmelding blir maskert, og at lenken til stedet med feilen ikke vises lenger.
+ */
 public class HallvardsErrorHandler implements ErrorHandler {
 
     @Override

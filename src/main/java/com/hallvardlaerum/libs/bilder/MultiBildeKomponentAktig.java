@@ -9,9 +9,9 @@ import java.util.ArrayList;
 public interface MultiBildeKomponentAktig<BildeentitetKlasse extends BildeentitetAktig, ForelderKlasse extends EntitetAktig> {
 
     void init(MultiBildeKomponentMal.VisningEnum visningEnum,
-              EntitetserviceAktig<BildeentitetKlasse> bildeentitetservice,
+              EntitetserviceAktig<BildeentitetKlasse,?> bildeentitetservice,
               BildeRedigeringsomraadeAktig<BildeentitetKlasse, ForelderKlasse> bildeRedigeringsomraade,
-              EntitetserviceAktig<ForelderKlasse> forelderentitetservice,
+              EntitetserviceAktig<ForelderKlasse,?> forelderentitetservice,
               RedigeringsomraadeAktig<ForelderKlasse> forelderRedigeringsomraade);
     void visBildeNr (Integer plassNr);
     void oppdaterForFremfunnetForelderentitet(ArrayList<BildeentitetKlasse> bilder);

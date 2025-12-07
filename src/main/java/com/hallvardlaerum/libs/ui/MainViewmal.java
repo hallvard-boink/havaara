@@ -43,13 +43,12 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
 
     public MainViewmal() {
 
-        addClassName(LumoUtility.Padding.MEDIUM);
-
     }
     
 
     @Override
     public void opprettLayout(VersjonskyklopAktig versjonskyklop){
+        addClassName(LumoUtility.Padding.MEDIUM);
         setSizeFull();
         this.versjonskyklop = versjonskyklop;
         bakgrunnLayout = new VerticalLayout();

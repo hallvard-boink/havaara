@@ -5,20 +5,20 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.data.binder.Binder;
 
-
-// TODO: Flytt prosedyrene som bare implementeres i redigeringsomraademal inn i egen interface. RedigeringsomraademalAktig
-public interface RedigeringsomraadeAktig<T extends EntitetAktig> {
+public interface RedigeringsomraadeAktig<Entitet extends EntitetAktig> {
     // ______________________________________________________________
     // ---- PROSEDYRER SOM IMPLEMENTERES I REDIGERINGSOMRAADEMAL ----
-    // For å beholde fleksibiliteten og åpne for andre maler enn redigeringsomraademal, må interfacen være stor
+
+//TODO: Flytt disse til RedigeringsomraademalAktig, men rydd i logikken  rundt bildekomponenter og særlig BildeTilRedigeringsomraadeAdapter
 
 
-        T getEntitet();
-        void setEntitet(T entitet);
+        Entitet getEntitet();
+        void setEntitet(Entitet entitet);
+
 
 
     // --- Data og databinding ---
-        Binder<T> hentBinder();
+        Binder<Entitet> hentBinder();
 
         void lesBean();
         void skrivBean();
@@ -28,15 +28,15 @@ public interface RedigeringsomraadeAktig<T extends EntitetAktig> {
 
     // --- Layout og struktur ----
 
-        ViewmalAktig<?> hentView();
-        void settView(ViewmalAktig<?> view);
+        ViewmalAktig<?,?> hentView();
+        void settView(ViewmalAktig<?,?> view);
         <C extends Component> C leggTilRedigeringsfelt(C komponent);
         <C extends Component> C leggTilRedigeringsfelt(Integer tabIndex, C komponent);
         <C extends Component> C leggTilRedigeringsfelt(String tabTittelString, C komponent);
         <C extends Component> C leggTilRedigeringsfelt(Tab tab, C komponent);
         <C extends Component> C leggTilAndrefelterOver(C component);
         <C extends Component> C leggTilAndrefelterUnder(C komponent);
-        Tab opprettTab(String tittelString);
+        Tab opprettTabOgEvtTabSheet(String tittelString);
         void leggTilDatofeltTidOpprettetOgRedigert();
         void settColspan(Component komponent, Integer intSpan);
 

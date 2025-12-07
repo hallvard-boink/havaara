@@ -170,7 +170,7 @@ public class CSVImportmester implements CSVImportmesterAktig {
      * @param entitetserviceAktig
      */
     //@Override
-    public void velgImportfilOgKjoerImport(EntitetserviceAktig<?> entitetserviceAktig) {
+    public void velgImportfilOgKjoerImport(EntitetserviceAktig<?,?> entitetserviceAktig) {
         this.entitetservice = entitetserviceAktig;
         importdialog.open();
     }
@@ -239,7 +239,7 @@ public class CSVImportmester implements CSVImportmesterAktig {
         return ;
     }
 
-    public boolean importerFraFileTilKjentEntitet(Path importFilPath, EntitetserviceAktig<?> entitetservice) {
+    public boolean importerFraFileTilKjentEntitet(Path importFilPath, EntitetserviceAktig<?,?> entitetservice) {
         this.entitetservice = entitetservice;
         try {
             ArrayList<String> tekstraderArrayList = new ArrayList<>(Files.readAllLines(importFilPath));
@@ -371,8 +371,8 @@ public class CSVImportmester implements CSVImportmesterAktig {
 
 
         if (field.isAnnotationPresent(ManyToOne.class)) {
-            if (entitetservice instanceof EntitetserviceMedForelderAktig<?, ?>) {
-                ((EntitetserviceMedForelderAktig<?, ?>) entitetservice).oppdaterForelderVedImport(entitet, field, (String) nyVerdi);
+            if (entitetservice instanceof EntitetserviceMedForelderAktig<?, ?, ?, ?>) {
+                ((EntitetserviceMedForelderAktig<?, ?, ?, ?>) entitetservice).oppdaterForelderVedImport(entitet, field, (String) nyVerdi);
             } else {
                 Loggekyklop.hent().loggTilFilINFO("Feltet " + field.getName() + " er annotert med @ManyToOne, men entitetservicen implementerer ikke EntitetserviceMedForelderAktig<?,?>. "
                 + "Importerer ikke feltets innhold.");

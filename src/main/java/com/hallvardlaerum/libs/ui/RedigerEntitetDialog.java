@@ -14,21 +14,18 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
 
     private RedigeringsomraadeMal<BarneKlasse> barnRedigeringsomraade;
     private RedigeringsomraadeMal<ForelderKlasse> forelderRedigeringsomraade;
-    private EntitetserviceAktig<BarneKlasse> barnEntitetservice;
-    private EntitetserviceAktig<ForelderKlasse> forelderEntitetservice;
+    private EntitetserviceAktig<BarneKlasse,?> barnEntitetservice;
+    private EntitetserviceAktig<ForelderKlasse,?> forelderEntitetservice;
 
 
-    public RedigerEntitetDialog (EntitetserviceAktig<BarneKlasse> barnEntitetservice,
-                                 EntitetserviceAktig<ForelderKlasse> forelderEntitetservice,
+    public RedigerEntitetDialog (EntitetserviceAktig<BarneKlasse,?> barnEntitetservice,
+                                 EntitetserviceAktig<ForelderKlasse,?> forelderEntitetservice,
                                  String strTittel,
-                                 String strForklaring) {
+                                 String strForklaring,
+                                 RedigeringsomraadeMal<BarneKlasse> redigeringsomraade) {
         this.barnEntitetservice = barnEntitetservice;
-        if (barnEntitetservice.hentRedigeringsomraadeAktig() instanceof RedigeringsomraadeMal<?>) {
-            this.barnRedigeringsomraade = (RedigeringsomraadeMal<BarneKlasse>) barnEntitetservice.hentRedigeringsomraadeAktig();
-        } else {
-            Loggekyklop.hent().loggFEIL("Barneredigeringsområdet bruker ikke RedigeringsomraadeMal, avbryter");
-            return;
-        }
+        barnRedigeringsomraade = redigeringsomraade;
+
 
         this.forelderEntitetservice = forelderEntitetservice;
         if (forelderEntitetservice.hentRedigeringsomraadeAktig() instanceof RedigeringsomraadeMal<?>) {
@@ -48,8 +45,14 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
         verticalLayout.setSizeFull();
         verticalLayout.add(byggKnappeRad());
 
+        this.setResizable(true);
+        this.setDraggable(true);
     }
 
+    public void settStoerrelse(Integer hoeydeiPixler, Integer breddeIPixler) {
+        this.setWidth(breddeIPixler + "px");
+        this.setHeight(hoeydeiPixler + "px");
+    }
 
     public void vis(BarneKlasse entitet){
         barnRedigeringsomraade.aktiver(true);

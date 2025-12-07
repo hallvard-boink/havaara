@@ -14,7 +14,7 @@ import com.vaadin.flow.data.binder.Binder;
  */
 public class BildeTilRedigeringsomraadeAdapter<Bildeklasse extends BildeentitetAktig<Forelderklasse>,
         Forelderklasse extends EntitetAktig>
-        implements RedigeringsomraadeAktig<EntitetAktig> {
+        implements RedigeringsomraadeAktig<EntitetAktig>{
 
     BildeRedigeringsomraadeAktig<Bildeklasse,Forelderklasse> bilderedigeringsomraade;
 
@@ -39,7 +39,7 @@ public class BildeTilRedigeringsomraadeAdapter<Bildeklasse extends BildeentitetA
     }
 
     @Override
-    public ViewmalAktig<?> hentView() {
+    public ViewmalAktig<?, ?> hentView() {
         return bilderedigeringsomraade.hentView();
     }
 
@@ -74,8 +74,8 @@ public class BildeTilRedigeringsomraadeAdapter<Bildeklasse extends BildeentitetA
     }
 
     @Override
-    public Tab opprettTab(String tittelString) {
-        return bilderedigeringsomraade.opprettTab(tittelString);
+    public Tab opprettTabOgEvtTabSheet(String tittelString) {
+        return bilderedigeringsomraade.opprettTabOgEvtTabSheet(tittelString);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class BildeTilRedigeringsomraadeAdapter<Bildeklasse extends BildeentitetA
     }
 
     @Override
-    public void settView(ViewmalAktig<?> view) {
+    public void settView(ViewmalAktig<?,?> view) {
         //
     }
 }

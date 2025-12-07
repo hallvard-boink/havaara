@@ -10,7 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class EntityFilterSpecification<T extends EntitetAktig> implements Specification<T> {
+public class EntityFilterSpecification<Entitet extends EntitetAktig> implements Specification<Entitet> {
     private ArrayList<SearchCriteria> filtre;
     private OperatorEnum operatorEnum = OperatorEnum.AND;
     public enum OperatorEnum {
@@ -35,7 +35,7 @@ public class EntityFilterSpecification<T extends EntitetAktig> implements Specif
 
 
     @Override
-    public Predicate toPredicate (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+    public Predicate toPredicate (Root<Entitet> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
         ArrayList<Predicate> predikaterArrayList = new ArrayList<>();
 
         for (SearchCriteria criteria:filtre) {

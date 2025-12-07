@@ -2,7 +2,7 @@ package com.hallvardlaerum.libs.ui;
 
 import com.hallvardlaerum.libs.database.*;
 import com.hallvardlaerum.libs.eksportimport.CSVEksportkyklop;
-import com.hallvardlaerum.libs.eksportimport.CSVImportkyklop;
+import com.hallvardlaerum.libs.eksportimport.CSVImportmester;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
 import com.hallvardlaerum.libs.felter.Datokyklop;
 import com.hallvardlaerum.libs.felter.TekstKyklop;
@@ -31,10 +31,13 @@ import com.vaadin.flow.data.provider.*;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.component.button.Button;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Dette er en generisk klasse som nye Views i Vaadin skal ekstendere for å få en lik layout og
@@ -47,8 +50,10 @@ import java.util.Locale;
  * @param <Entitet>
  */
 
-public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> extends HorizontalLayout implements ViewmalAktig<Entitet> {
-    private EntitetserviceAktig<Entitet> entitetserviceAktig;
+public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
+        Repo extends JpaRepository<Entitet, UUID> & JpaSpecificationExecutor<Entitet> & RepositoryTillegg<Entitet>>
+        extends HorizontalLayout implements ViewmalAktig<Entitet, Repo> {
+    private EntitetserviceAktig<Entitet, ?> entitetserviceAktig;
     private Grid<Entitet> grid;
     private HorizontalLayout layoutRedigeringsknapper;
     private HorizontalLayout layoutSoekeknapper;
@@ -108,16 +113,16 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
     public HorizontalLayout hentKnapperadRedigeringsfelt() { return layoutRedigeringsknapper;   }
 
 
-    public void opprettLayout(EntitetserviceAktig<Entitet> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade) {
+    public void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade) {
         opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL);
     }
 
-    public void opprettLayout(EntitetserviceAktig<Entitet> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade, SplitLayout.Orientation orientering){
+    public void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade, SplitLayout.Orientation orientering){
         opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL, 50D);
     }
 
     @Override
-    public void opprettLayout(EntitetserviceAktig<Entitet> entitetserviceAktig,
+    public void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig,
                               RedigeringsomraadeAktig<Entitet> redigeringsomraade,
                               SplitLayout.Orientation orientering,
                               Double splitPositionDouble)
@@ -316,7 +321,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet> exten
 
         MenuItem importerFraCSVMenuItem = verktoeySubMenu.addItem("Importer fra CSV");
         importerFraCSVMenuItem.addClickListener(e -> {
-            CSVImportkyklop.hent().velgImportfilOgKjoerImport(entitetserviceAktig);
+            new CSVImportmester().velgImportfilOgKjoerImport(entitetserviceAktig);
             grid.setItems(entitetserviceAktig.finnAlle());
             oppdaterSoekeomraadeEtterRedigeringAvEntitet();
         });

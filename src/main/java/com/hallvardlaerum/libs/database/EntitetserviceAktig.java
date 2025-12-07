@@ -2,36 +2,42 @@ package com.hallvardlaerum.libs.database;
 
 import com.hallvardlaerum.libs.ui.RedigeringsomraadeAktig;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 
 /**
  * Interface som sørger for at ulike serviceklasser for entiteter i Spring boot har samme metoder
  *
- * @param <T> Entiteten som serviceklassen håndterer
+ * @param <Entitet> Entiteten som serviceklassen håndterer
  */
-public interface EntitetserviceAktig<T extends EntitetAktig> {
+public interface EntitetserviceAktig<Entitet extends EntitetAktig,
+        Repo extends JpaRepository<Entitet, UUID>&JpaSpecificationExecutor<Entitet>& RepositoryTillegg<Entitet>> {
 
-    Stream<T> finnEntiteterMedSpecification(int offset, int limit, EntityFilterSpecification<T> entityFilterSpecification, Sort sortering);
-    int tellAntallMedSpecification(int offset, int limit, EntityFilterSpecification<T> entityFilterSpecification);
+    void initEntitetserviceMal(Class<Entitet> klasse, Repo repository);
+
+    Stream<Entitet> finnEntiteterMedSpecification(int offset, int limit, EntityFilterSpecification<Entitet> entityFilterSpecification, Sort sortering);
+    int tellAntallMedSpecification(int offset, int limit, EntityFilterSpecification<Entitet> entityFilterSpecification);
     int tellAntallMedSpecification();
-    EntityFilterSpecification<T> getEntityFilterSpecification();
-    void setEntityFilterSpecification(EntityFilterSpecification<T> entityFilterSpecification);
+    EntityFilterSpecification<Entitet> getEntityFilterSpecification();
+    void setEntityFilterSpecification(EntityFilterSpecification<Entitet> entityFilterSpecification);
 
 
-    ArrayList<T> finnAlle();
-    T opprettEntitet();
-    void lagre(T entity);
-    void lagreAlle(ArrayList<T> alEntities);
-    void slett(T entity);
+    ArrayList<Entitet> finnAlle();
+    Entitet opprettEntitet();
+    void lagre(Entitet entity);
+    void lagreAlle(ArrayList<Entitet> alEntities);
+    void slett(Entitet entity);
     void flush();
     void opprettTestdata();
     boolean slettAlle();
-    T finnEtterUUID(String uuid);
+    Entitet finnEtterUUID(String uuid);
 
     /**
      * Entitetservicen konverterer streng hvis den generiske importrutinen ikke klarer det
@@ -46,12 +52,12 @@ public interface EntitetserviceAktig<T extends EntitetAktig> {
     boolean lagreEkstrafeltTilSenere(EntitetAktig o, String feltnavnString, String verdiString, String importradString);
 
     String hentEntitetsnavn();
-    String hentVisningsnavn(T entitet);
+    String hentVisningsnavn(Entitet entitet);
 
-    ArrayList<T> finnAlleRedigertDatoTidMellom(LocalDateTime fraDatoTid, LocalDateTime tilDatoTid);
-    T finnSistRedigert();
+    ArrayList<Entitet> finnAlleRedigertDatoTidMellom(LocalDateTime fraDatoTid, LocalDateTime tilDatoTid);
+    Entitet finnSistRedigert();
 
-    RedigeringsomraadeAktig<T> hentRedigeringsomraadeAktig();
+    RedigeringsomraadeAktig<Entitet> hentRedigeringsomraadeAktig();
 
     int konverterOffsetOgLimitTilPageNumber(int offsetInt, int limitInt);
 

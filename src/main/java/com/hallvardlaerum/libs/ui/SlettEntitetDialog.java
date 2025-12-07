@@ -8,14 +8,14 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-public class SlettEntitetDialog<T extends EntitetAktig> extends Dialog {
+public class SlettEntitetDialog<Entitet extends EntitetAktig> extends Dialog {
 
-    private T entitet;
-    private EntitetserviceAktig<T> entitetservice;
+    private Entitet entitet;
+    private EntitetserviceAktig<Entitet,?> entitetservice;
     private Span hovedomraadeSpan;
-    private RedigeringsomraadeAktig<T> redigeringsomraadeAktig;
+    private RedigeringsomraadeAktig<Entitet> redigeringsomraadeAktig;
 
-    public SlettEntitetDialog(EntitetserviceAktig<T> entitetservice) {
+    public SlettEntitetDialog(EntitetserviceAktig<Entitet,?> entitetservice) {
         this.entitetservice = entitetservice;
         this.redigeringsomraadeAktig = entitetservice.hentRedigeringsomraadeAktig();
 
@@ -47,7 +47,7 @@ public class SlettEntitetDialog<T extends EntitetAktig> extends Dialog {
     }
 
 
-    public void vis(T entitet) {
+    public void vis(Entitet entitet) {
         this.entitet = entitet;
         hovedomraadeSpan.setText("Er du sikker på at du vil slette " + this.entitet.hentBeskrivendeNavn() + "?");
         this.open();

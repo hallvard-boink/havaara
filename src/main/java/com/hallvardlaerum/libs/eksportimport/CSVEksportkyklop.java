@@ -75,7 +75,7 @@ public class CSVEksportkyklop implements CSVEksportkyklopAktig {
     }
 
 
-    public String hentUtEntiteteneSomTekst(EntitetserviceAktig<? extends EntitetAktig> entitetservice){
+    public String hentUtEntiteteneSomTekst(EntitetserviceAktig<? extends EntitetAktig, ?> entitetservice){
         return lagCSVTekstMedHeaderAvArrayList(entitetservice.finnAlle());
     }
 
@@ -144,7 +144,7 @@ public class CSVEksportkyklop implements CSVEksportkyklopAktig {
         return sbFields.toString();
     }
 
-    public void oppdaterFeltliste(EntitetserviceAktig<?> entitetservice) {
+    public void oppdaterFeltliste(EntitetserviceAktig<?,?> entitetservice) {
         Object o = entitetservice.opprettEntitet();
         byggOppFeltliste(o);
     }

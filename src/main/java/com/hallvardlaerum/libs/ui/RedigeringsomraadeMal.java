@@ -17,22 +17,32 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
-        extends VerticalLayout implements RedigeringsomraademalAktig<T> {
-    private T entitet;
-    private Binder<T> binder;
+import java.text.Normalizer;
+
+public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
+        extends VerticalLayout
+        implements RedigeringsomraademalAktig<Entitet> {
+    private Entitet entitet;
+    private Binder<Entitet> binder;
     private Component fokusComponent;
 
     private DateTimePicker opprettetDatoTid;
     private DateTimePicker redigertDatoTid;
-    private FormLayout formLayout;
+    private VerticalLayout kjerneVerticalLayout;
+    private TabSheet tabSheet;
+    private FormLayout formLayoutKjerne;
     private VerticalLayout underFelterVerticalLayout;
     private VerticalLayout overFelterVerticalLayout;
-    private ViewmalAktig<?> delAvView;
-    private TabSheet tabSheet;
+    private ViewmalAktig<?,?> delAvView;
     private final String hovedtabnavnString="Hoved";
 
+
     public RedigeringsomraadeMal() {
+
+    }
+
+    @Override
+    public void initRedigeringsomraadeMal(){
         opprettHovedlayout();
         binder = new Binder<>();
     }
@@ -43,14 +53,18 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
         overFelterVerticalLayout.setPadding(false);
         overFelterVerticalLayout.setWidthFull();
 
-        formLayout = new FormLayout();
+        kjerneVerticalLayout = new VerticalLayout();
+        kjerneVerticalLayout.setSizeFull();
+        formLayoutKjerne = new FormLayout();
+        formLayoutKjerne.setWidthFull();
+        kjerneVerticalLayout.add(formLayoutKjerne);
 
         underFelterVerticalLayout = new VerticalLayout();
         underFelterVerticalLayout.setMargin(false);
         underFelterVerticalLayout.setPadding(false);
         underFelterVerticalLayout.setWidthFull();
 
-        add(overFelterVerticalLayout, formLayout, underFelterVerticalLayout);
+        add(overFelterVerticalLayout, kjerneVerticalLayout, underFelterVerticalLayout);
 
         this.setPadding(false);
         this.setMargin(false);
@@ -58,45 +72,52 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
 
 
     @Override
-    public Tab opprettTab(String tittelString) {
+    public Tab opprettTabOgEvtTabSheet(String tittelString) {
+
         if (tabSheet == null) {
-            VerticalLayout hovedTabVerticalLayout = new VerticalLayout();
-            hovedTabVerticalLayout.setSizeFull();
-            hovedTabVerticalLayout.add(formLayout);
-            tabSheet = new TabSheet();
-            //tabSheet.add("Hoved",hovedTabVerticalLayout);
-            tabSheet.setSizeFull();
-            removeAll();
-            add(overFelterVerticalLayout, tabSheet, underFelterVerticalLayout);
+            opprettTabSheet();
         }
 
-        VerticalLayout tabVerticalLayout = new VerticalLayout();
-        tabVerticalLayout.setSizeFull();
+        FormLayout formLayout = opprettFormLayoutMedPentUtseende();
+        Tab tab = tabSheet.add(tittelString,formLayout);
+        tab.setLabel(tittelString);
+        return tab;
+    }
 
+    private void opprettTabSheet(){
+        tabSheet = new TabSheet();
+        tabSheet.setSizeFull();
+        kjerneVerticalLayout.add(tabSheet);
+    }
+
+    private FormLayout opprettFormLayoutMedPentUtseende(){
         FormLayout formLayout = new FormLayout();
         formLayout.setAutoResponsive(true);
         formLayout.setColumnWidth("8em");
         formLayout.setExpandColumns(true);
         formLayout.setExpandFields(true);
         formLayout.setWidthFull();
-        tabVerticalLayout.add(formLayout);
-        return tabSheet.add(tittelString,tabVerticalLayout);
-
+        return formLayout;
     }
 
     @Override
     public FormLayout hentFormLayoutFraTab(Integer tabIndex){
         if (tabSheet == null) {
-            opprettTab(hovedtabnavnString);
+            opprettTabOgEvtTabSheet(hovedtabnavnString);
         }
-        return hentFormLayoutFraTab(tabSheet.getTabAt(tabIndex));
+        Tab tab = tabSheet.getTabAt(tabIndex);
+        if (tab == null) {
+            Loggekyklop.hent().loggFEIL("Fant ingen tab med index " + tabIndex + ", avbryter");
+            return null;
+        } else {
+            return hentFormLayoutFraTab(tab);
+        }
     }
 
     @Override
     public FormLayout hentFormLayoutFraTab(String tabTittelString){
-        if(tabSheet==null) { // Ingen tab er opprettet, siden TabSheet uansett er null
-            tabSheet = new TabSheet();
-            hentFormLayoutFraTab(opprettTab(tabTittelString));
+        if(tabSheet==null) {
+            opprettTabOgEvtTabSheet(hovedtabnavnString);
         }
 
         for (int i = 0; i<tabSheet.getTabCount(); i++) {
@@ -106,36 +127,27 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
             }
         }
         // Tab ikke funnet, oppretter ny
-        return hentFormLayoutFraTab(opprettTab(tabTittelString));
+        return hentFormLayoutFraTab(opprettTabOgEvtTabSheet(tabTittelString));
     }
 
     private FormLayout hentFormLayoutFraTab(Tab tab){
         Component tabContent = tabSheet.getComponent(tab);
-        if (tabContent instanceof VerticalLayout) {
-            VerticalLayout verticalLayout = (VerticalLayout) tabContent;
-            return verticalLayout.getChildren()
-                    .filter(component -> component instanceof FormLayout)
-                    .map(component -> (FormLayout) component)
-                    .findFirst()
-                    .orElseGet(() -> {
-                        // If no FormLayout exists, create one and add it
-                        FormLayout formLayout = new FormLayout();
-                        verticalLayout.add(formLayout);
-                        return formLayout;
-                    });
 
+        if (tabContent instanceof FormLayout) {
+            return (FormLayout) tabContent;
+        } else {
+            Loggekyklop.hent().loggFEIL("Komponenten på øverste nivå for tab " + tab.getLabel() + " er " + tabContent.getClassName() + ", ikke Formlayout");
+            return null;
         }
 
-
-        return (FormLayout) tab.getChildren().filter(c -> c.getClass().getName().equals(FormLayout.class.getName())).toList().getFirst();
     }
 
     @Override
-    public void settView(ViewmalAktig<?> delAvView){
+    public void settView(ViewmalAktig<?,?> delAvView){
         this.delAvView = delAvView;
     }
 
-    public ViewmalAktig<?> hentView() {
+    public ViewmalAktig<?,?> hentView() {
         return delAvView;
     }
 
@@ -152,8 +164,8 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
         redigertDatoTid = new DateTimePicker("Redigert dato");
         leggTilRedigeringsfelter(tabString, opprettetDatoTid, redigertDatoTid);
 
-        binder.bind(opprettetDatoTid, T::getOpprettetDatoTid, T::setOpprettetDatoTid);
-        binder.bind(redigertDatoTid, T::getRedigertDatoTid, T::setRedigertDatoTid);
+        binder.bind(opprettetDatoTid, Entitet::getOpprettetDatoTid, Entitet::setOpprettetDatoTid);
+        binder.bind(redigertDatoTid, Entitet::getRedigertDatoTid, Entitet::setRedigertDatoTid);
 
         opprettetDatoTid.setEnabled(false);
         redigertDatoTid.setEnabled(false);
@@ -161,7 +173,31 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
 
     @Override
     public void settColspan(Component komponent, Integer intSpan) {
-        formLayout.setColspan(komponent,intSpan);
+        FormLayout formLayout = finnFormlayout(komponent);
+        if (formLayout!=null) {
+            formLayout.setColspan(komponent,intSpan);
+        }
+    }
+
+    private FormLayout finnFormlayout(Component komponent) {
+        if (komponentenFinnesIFormlayout(komponent, formLayoutKjerne)) {
+            return formLayoutKjerne;
+        }
+
+        for (int i = 0; i<tabSheet.getTabCount(); i++) {
+            FormLayout formLayoutITab = hentFormLayoutFraTab(i);
+            if (komponentenFinnesIFormlayout(komponent, formLayoutITab)) {
+                return formLayoutITab;
+            }
+        }
+
+        Loggekyklop.hent().loggFEIL("Komponenten du prøver å finne er ikke lagt til noe sted");
+        return null;
+
+    }
+
+    private boolean komponentenFinnesIFormlayout(Component component, FormLayout formLayout) {
+        return formLayout.getChildren().anyMatch(c -> c.equals(component));
     }
 
 
@@ -171,6 +207,10 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
      */
     public void leggTilRedigeringsfelter(String tabString, Component... components){
         FormLayout formLayout = hentFormLayoutFraTab(tabString);
+        leggTilRedigeringsfelter_faktisk(formLayout,components);
+    }
+
+    private void leggTilRedigeringsfelter_faktisk(FormLayout formLayout, Component... components) {
         formLayout.addFormRow(components);
 
         for (Component component:components) {
@@ -182,14 +222,16 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
         }
     }
 
+
     @Override
     public void leggTilRedigeringsfelter(Component... components) {
-        leggTilRedigeringsfelter(hovedtabnavnString, components);
+        leggTilRedigeringsfelter_faktisk(formLayoutKjerne, components);
     }
 
 
     private <C extends Component> C leggTilRedigeringsfelt_faktisk(FormLayout formLayout, C komponent)  {
-        formLayout.add(komponent);
+        this.formLayoutKjerne = formLayout;
+        this.formLayoutKjerne.add(komponent);
         if (komponent instanceof DatePicker) {
             Datokyklop.hent().fiksDatoformat((DatePicker) komponent);
         } else if (komponent instanceof  DateTimePicker) {
@@ -203,10 +245,7 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
 
     @Override
     public <C extends Component> C leggTilRedigeringsfelt(C komponent) {
-        if (formLayout==null) {
-            formLayout = hentFormLayoutFraTab(hovedtabnavnString);
-        }
-        return leggTilRedigeringsfelt_faktisk(formLayout, komponent);
+        return leggTilRedigeringsfelt_faktisk(formLayoutKjerne, komponent);
     }
 
     @Override
@@ -215,6 +254,7 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
 
         FormLayout formLayout = hentFormLayoutFraTab(tabIndex);
         if (formLayout==null) {
+            Loggekyklop.hent().loggFEIL("Fant ingen tab på tabIndex " + tabIndex + ", avbryter");
             return null;
         } else {
             return leggTilRedigeringsfelt_faktisk(formLayout, komponent);
@@ -273,7 +313,7 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
     }
 
     @Override
-    public Binder<T> hentBinder() {
+    public Binder<Entitet> hentBinder() {
         if (binder==null) {
             binder = new Binder<>();
         }
@@ -281,12 +321,12 @@ public abstract class RedigeringsomraadeMal<T extends EntitetAktig>
     }
 
     @Override
-    public T getEntitet() {
+    public Entitet getEntitet() {
         return entitet;
     }
 
     @Override
-    public void setEntitet(T entitet) {
+    public void setEntitet(Entitet entitet) {
         this.entitet = entitet;
     }
 

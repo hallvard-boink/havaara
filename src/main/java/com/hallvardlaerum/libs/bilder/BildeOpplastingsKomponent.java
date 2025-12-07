@@ -20,7 +20,7 @@ public class BildeOpplastingsKomponent extends VerticalLayout implements BildeOp
     private RedigeringsomraadeAktig<EntitetAktig> redigeringsomraade;
     private FilopplastingsEgnet filopplastingsEgnet;
     private HorizontalLayout knappeRadHorizontalLayout;
-    private EntitetserviceAktig<BildeentitetAktig> bildeentitetservice;
+    private EntitetserviceAktig<BildeentitetAktig, ?> bildeentitetservice;
     private AbstraktBildeentitet bildeentitet;
 
     /**

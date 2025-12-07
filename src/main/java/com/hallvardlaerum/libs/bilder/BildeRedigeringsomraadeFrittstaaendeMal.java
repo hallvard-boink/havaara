@@ -18,8 +18,8 @@ public abstract class BildeRedigeringsomraadeFrittstaaendeMal<Bildeklasse extend
         extends RedigeringsomraadeMal<Bildeklasse> implements BildeRedigeringsomraadeFrittstaaendeAktig<Bildeklasse,Forelderklasse>
 {
 
-    private EntitetserviceAktig<Bildeklasse> bildeservice;
-    private EntitetserviceAktig<Forelderklasse> forelderservice;
+    private EntitetserviceAktig<Bildeklasse,?> bildeservice;
+    private EntitetserviceAktig<Forelderklasse,?> forelderservice;
     private BildeRedigeringsomraadeMal<Bildeklasse,Forelderklasse> bildeRedigeringsomraade;
 
     public BildeRedigeringsomraadeFrittstaaendeMal() {
@@ -27,7 +27,7 @@ public abstract class BildeRedigeringsomraadeFrittstaaendeMal<Bildeklasse extend
     }
 
     @Override
-    public void initier(EntitetserviceAktig<Bildeklasse> bildeservice, EntitetserviceAktig<Forelderklasse> forelderservice) {
+    public void initier(EntitetserviceAktig<Bildeklasse,?> bildeservice, EntitetserviceAktig<Forelderklasse,?> forelderservice) {
         this.bildeservice = bildeservice;
         this.forelderservice = forelderservice;
 

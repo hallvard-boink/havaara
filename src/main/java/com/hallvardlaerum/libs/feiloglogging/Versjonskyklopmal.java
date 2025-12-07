@@ -6,6 +6,11 @@ import com.hallvardlaerum.libs.filerogopplasting.Filkyklop;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+/**
+ * Versjonskykloper sørger for å gjøre informasjon om siste oppdatert og tidligere versjon
+ * tilgjengelig for bruker. Dette er en måte å formidle informasjon om nye funksjoner på,
+ * og hjelper utvikler med å se hva som er gjort tidligere.
+ */
 public abstract class Versjonskyklopmal implements VersjonskyklopAktig {
 
     private String applikasjonsNavnString;

@@ -29,6 +29,7 @@ import java.util.Arrays;
 /// Denne måtene er enklere, og har ikke behov for å bygge opp layout separat.
 ///
 ///
+
 public class TekstTabell extends VerticalLayout {
     private HorizontalLayout tittelStripe;
     private Span tittel;

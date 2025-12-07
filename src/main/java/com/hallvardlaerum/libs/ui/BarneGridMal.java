@@ -1,17 +1,17 @@
 package com.hallvardlaerum.libs.ui;
 
-import com.hallvardlaerum.libs.database.AbstraktEntitet;
-import com.hallvardlaerum.libs.database.EntitetMedForelderAktig;
-import com.hallvardlaerum.libs.database.EntitetserviceAktig;
-import com.hallvardlaerum.libs.database.EntitetserviceMedForelderAktig;
+import com.hallvardlaerum.libs.database.*;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.data.renderer.NativeButtonRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Denne gir standardfunksjonalitet for å vise og redigere barneposter innenfor et redigeringsområde.
@@ -27,19 +27,26 @@ import java.util.ArrayList;
  */
 
 
-public class BarneGridMal<BarneKlasse extends EntitetMedForelderAktig, ForeldreKlasse extends AbstraktEntitet> extends Grid<BarneKlasse>{
-    EntitetserviceMedForelderAktig<BarneKlasse, ForeldreKlasse> barneEntitetservice;
-    EntitetserviceAktig<ForeldreKlasse> forelderEntitetservice;
-    RedigeringsomraadeAktig<BarneKlasse> barneRedigeringsomraade;
-    RedigeringsomraadeAktig<ForeldreKlasse> forelderRedigeringsomraade;
+public class BarneGridMal<BarneKlasse extends EntitetMedForelderAktig,
+        ForeldreKlasse extends AbstraktEntitet,
+        Repo extends JpaRepository<BarneKlasse, UUID> & JpaSpecificationExecutor<BarneKlasse> & RepositoryTillegg<BarneKlasse>,
+        RepoForelder extends JpaRepository<ForeldreKlasse, UUID> & JpaSpecificationExecutor<ForeldreKlasse> & RepositoryTillegg<ForeldreKlasse>>
+        extends Grid<BarneKlasse>
+{
+    EntitetserviceMedForelderAktig<BarneKlasse, ForeldreKlasse, Repo, RepoForelder> barneEntitetservice;
+    EntitetserviceAktig<ForeldreKlasse, RepoForelder> forelderEntitetservice;
+    RedigeringsomraadeMal<BarneKlasse> barneRedigeringsomraade;
+    RedigeringsomraadeMal<ForeldreKlasse> forelderRedigeringsomraade;
     ArrayList<ValueProvider<BarneKlasse,?>> kolonneArrayList;
 
-    public BarneGridMal(EntitetserviceMedForelderAktig<BarneKlasse, ForeldreKlasse> barneEntitetservice, EntitetserviceAktig<ForeldreKlasse> forelderEntitetservice,
-                        ArrayList<ValueProvider<BarneKlasse, ?>> kolonneArrayList) {
+    public BarneGridMal(EntitetserviceMedForelderAktig<BarneKlasse, ForeldreKlasse, Repo, RepoForelder> barneEntitetservice,
+                        EntitetserviceAktig<ForeldreKlasse, RepoForelder> forelderEntitetservice,
+                        ArrayList<ValueProvider<BarneKlasse, ?>> kolonneArrayList,
+                        RedigeringsomraadeMal<BarneKlasse> barneKlasseRedigeringsomraade) {
         this.barneEntitetservice = barneEntitetservice;
         this.forelderEntitetservice = forelderEntitetservice;
-        this.barneRedigeringsomraade = barneEntitetservice.hentRedigeringsomraadeAktig();
-        this.forelderRedigeringsomraade = forelderEntitetservice.hentRedigeringsomraadeAktig();
+        this.barneRedigeringsomraade = barneKlasseRedigeringsomraade;
+        this.forelderRedigeringsomraade = (RedigeringsomraadeMal<ForeldreKlasse>)forelderEntitetservice.hentRedigeringsomraadeAktig();
         this.kolonneArrayList = kolonneArrayList;
 
         leggTilVerdikolonner();
@@ -57,8 +64,11 @@ public class BarneGridMal<BarneKlasse extends EntitetMedForelderAktig, ForeldreK
     private void leggTilKnappekolonnerOgTitler(){
         this.addColumn(new NativeButtonRenderer<>("Rediger", barn -> {
             RedigerEntitetDialog<BarneKlasse, ForeldreKlasse> redigeringsdialog =
-                    new RedigerEntitetDialog<>(barneEntitetservice, forelderEntitetservice,
-                            "Rediger " + barneEntitetservice.hentEntitetsnavn(), "" );
+                    new RedigerEntitetDialog<>(barneEntitetservice,
+                            forelderEntitetservice,
+                            "Rediger " + barneEntitetservice.hentEntitetsnavn(),
+                            "", barneRedigeringsomraade
+                            );
             redigeringsdialog.vis(barn);
         }));
 
@@ -80,7 +90,8 @@ public class BarneGridMal<BarneKlasse extends EntitetMedForelderAktig, ForeldreK
         NativeButtonRenderer<BarneKlasse> litenLeggTilNyBilButton = new NativeButtonRenderer<>("Opprett ny",entitet-> {
             RedigerEntitetDialog<BarneKlasse, ForeldreKlasse> redigeringsdialog =
                     new RedigerEntitetDialog<>(barneEntitetservice, forelderEntitetservice,
-                            "Rediger " + barneEntitetservice.hentEntitetsnavn(), "" );
+                            "Rediger " + barneEntitetservice.hentEntitetsnavn(), "",barneRedigeringsomraade
+                            );
             redigeringsdialog.vis(barneEntitetservice.opprettEntitetMedForelder());
         });
         this.getHeaderRows().getLast().getCells().get(1).setComponent(litenLeggTilNyBilButton.createComponent(this.barneEntitetservice.opprettEntitet()));

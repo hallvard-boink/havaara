@@ -8,25 +8,24 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.lang.reflect.Field;
 import java.util.UUID;
 
-public abstract class EntitetserviceMedForelderMal<EntitetKlasse extends EntitetMedForelderAktig,
+public abstract class EntitetserviceMedForelderMal
+        <EntitetKlasse extends EntitetMedForelderAktig,
         ForelderKlasse extends EntitetMedBarnAktig,
-        Repo extends JpaRepository<EntitetKlasse, UUID> & JpaSpecificationExecutor<EntitetKlasse> & RepositoryTillegg<EntitetKlasse>>
+        Repo extends JpaRepository<EntitetKlasse, UUID> & JpaSpecificationExecutor<EntitetKlasse> & RepositoryTillegg<EntitetKlasse>,
+        RepoForelder extends JpaRepository<ForelderKlasse, UUID> & JpaSpecificationExecutor<ForelderKlasse> & RepositoryTillegg<ForelderKlasse>>
         extends EntitetserviceMal<EntitetKlasse, Repo>
-        implements EntitetserviceMedForelderAktig<EntitetKlasse, ForelderKlasse>
+        implements EntitetserviceMedForelderAktig<EntitetKlasse, ForelderKlasse, Repo, RepoForelder>
 
 {
-    private EntitetserviceAktig<ForelderKlasse> forelderentitetservice;
+    private EntitetserviceAktig<ForelderKlasse, RepoForelder> forelderentitetservice;
     private Class<ForelderKlasse> forelderklasse;
 
     public EntitetserviceMedForelderMal() {
     }
 
-    public EntitetserviceMedForelderMal(Class<EntitetKlasse> klasse, Repo repository) {
-        super(klasse, repository);
-    }
-
     @Override
-    public void initier(Class<ForelderKlasse> forelderklasse, EntitetserviceAktig<ForelderKlasse> forelderentitetService) {
+    public void initierEntitetserviceMedForelderMal(Class<ForelderKlasse> forelderklasse,
+                                                    EntitetserviceAktig<ForelderKlasse, RepoForelder> forelderentitetService) {
         this.forelderentitetservice = forelderentitetService;
         this.forelderklasse = forelderklasse;
     }

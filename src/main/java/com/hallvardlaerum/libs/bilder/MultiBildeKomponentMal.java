@@ -49,9 +49,9 @@ public class MultiBildeKomponentMal<Bildeklasse extends BildeentitetAktig, Forel
     private VerticalLayout tabellTab;
     private PlassIndikatorKomponent plassIndikatorKomponent;
 
-    private EntitetserviceAktig<Bildeklasse> bildeentitetservice;
+    private EntitetserviceAktig<Bildeklasse,?> bildeentitetservice;
     private BildeRedigeringsomraadeAktig<Bildeklasse, Forelderklasse> bildeRedigeringsomraade;
-    private EntitetserviceAktig<Forelderklasse> forelderentitetservice;
+    private EntitetserviceAktig<Forelderklasse,?> forelderentitetservice;
     private Grid<Bildeklasse> gridSmaabilder;
     private ComboBox<Forelderklasse> forelderCombobox;
     private Boolean erFrittstaaende;
@@ -66,8 +66,8 @@ public class MultiBildeKomponentMal<Bildeklasse extends BildeentitetAktig, Forel
 
 
     @Override
-    public void init(VisningEnum visningEnum, EntitetserviceAktig<Bildeklasse> bildeentitetservice, BildeRedigeringsomraadeAktig<Bildeklasse, Forelderklasse> bildeRedigeringsomraade,
-              EntitetserviceAktig<Forelderklasse> forelderentitetservice, RedigeringsomraadeAktig<Forelderklasse> forelderRedigeringsomraade
+    public void init(VisningEnum visningEnum, EntitetserviceAktig<Bildeklasse,?> bildeentitetservice, BildeRedigeringsomraadeAktig<Bildeklasse, Forelderklasse> bildeRedigeringsomraade,
+              EntitetserviceAktig<Forelderklasse,?> forelderentitetservice, RedigeringsomraadeAktig<Forelderklasse> forelderRedigeringsomraade
     ){
 
         this.bildeentitetservice = bildeentitetservice;

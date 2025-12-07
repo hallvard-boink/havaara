@@ -3,7 +3,7 @@ package com.hallvardlaerum.libs.verktoy;
 import com.hallvardlaerum.libs.database.EntitetAktig;
 import com.hallvardlaerum.libs.database.EntitetserviceAktig;
 import com.hallvardlaerum.libs.eksportimport.CSVEksportkyklop;
-import com.hallvardlaerum.libs.eksportimport.CSVImportkyklop;
+import com.hallvardlaerum.libs.eksportimport.CSVImportmester;
 import com.hallvardlaerum.libs.feiloglogging.Infobit;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
 import com.hallvardlaerum.libs.felter.Datokyklop;
@@ -33,7 +33,7 @@ import java.util.zip.ZipOutputStream;
 
 public class Backupkyklop {
     private static Backupkyklop backupkyklop;
-    private ArrayList<EntitetserviceAktig<? extends EntitetAktig>> entitetservicene;
+    private ArrayList<EntitetserviceAktig<? extends EntitetAktig, ?>> entitetservicene;
     private Anchor lastnedAnchor;
     private String strBackupFilnavn;
     private File zipFil = null;
@@ -45,16 +45,16 @@ public class Backupkyklop {
     private MainViewmal mainViewMal = null;
 
 
-    public <T extends EntitetAktig> EntitetserviceAktig<T> finnEntitetservice(Class<T> entitetKlasse) {
-        for (EntitetserviceAktig<?> entitetservice:entitetservicene) {
+    public <T extends EntitetAktig> EntitetserviceAktig<T,?> finnEntitetservice(Class<T> entitetKlasse) {
+        for (EntitetserviceAktig<?,?> entitetservice:entitetservicene) {
             if (entitetservice.hentEntitetsnavn().equalsIgnoreCase(entitetKlasse.getSimpleName())) {
-                return (EntitetserviceAktig<T>)entitetservice;
+                return (EntitetserviceAktig<T,?>)entitetservice;
             }
         }
         return null;
     }
 
-    public ArrayList<EntitetserviceAktig<? extends EntitetAktig>> hentEntitetservicene() {
+    public ArrayList<EntitetserviceAktig<? extends EntitetAktig, ?>> hentEntitetservicene() {
         return entitetservicene;
     }
 
@@ -64,7 +64,7 @@ public class Backupkyklop {
 
     public ArrayList<Inspeksjonskyklop.UtvidetFelt> byggOppAlleFelterArrayList(){
         ArrayList<Inspeksjonskyklop.UtvidetFelt> alleFelterArrayList = new ArrayList<>();
-        for (EntitetserviceAktig<?> entitetservice : entitetservicene) {
+        for (EntitetserviceAktig<?, ?> entitetservice : entitetservicene) {
             EntitetAktig entitet = entitetservice.opprettEntitet();
             alleFelterArrayList.addAll(Inspeksjonskyklop.hent().byggOppFeltliste(entitet));
         }
@@ -173,7 +173,7 @@ public class Backupkyklop {
         sb.append(Datokyklop.hent().formaterDatoTid(forEnTimeSiden)).append(" i entitetene ");
 
         Boolean blnErEndret = false;
-        for (EntitetserviceAktig<?> entitetservice: entitetservicene) {
+        for (EntitetserviceAktig<?, ?> entitetservice: entitetservicene) {
             sb.append(entitetservice.hentEntitetsnavn()).append(" ");
             if (!entitetservice.finnAlleRedigertDatoTidMellom(forToTimerSiden, forEnTimeSiden).isEmpty()) {
                blnErEndret = true;
@@ -243,7 +243,7 @@ public class Backupkyklop {
         }
 
         ZipEntry zipEntry;
-            for (EntitetserviceAktig<? extends EntitetAktig> entitetservice:entitetservicene) {
+            for (EntitetserviceAktig<? extends EntitetAktig, ?> entitetservice:entitetservicene) {
                 if(!entitetservice.finnAlle().isEmpty()) {
                     try {
                         zipEntry = new ZipEntry(opprettFilnavnForEntitetensTekstfilIZipfil(entitetservice));
@@ -266,7 +266,7 @@ public class Backupkyklop {
         mainViewMal.oppdaterBackupteksttabell();
     }
 
-    public String opprettFilnavnForEntitetensTekstfilIZipfil(EntitetserviceAktig<?> entitetservice) {
+    public String opprettFilnavnForEntitetensTekstfilIZipfil(EntitetserviceAktig<?, ?> entitetservice) {
         return entitetservice.hentEntitetsnavn() + ".csv";
     }
 
@@ -342,13 +342,13 @@ public class Backupkyklop {
     }
 
     private Boolean importerBackupfilerSomCSV() {
-
+        CSVImportmester csvImportmester = new CSVImportmester();
         for (int i= 0; i<entitetservicene.size();i++) {
-            EntitetserviceAktig<?> entityservice = entitetservicene.get(i);
+            EntitetserviceAktig<?, ?> entityservice = entitetservicene.get(i);
             Loggekyklop.hent().loggDEBUG("Importerer rader for " + entityservice.hentEntitetsnavn());
             String filnavnString = opprettFilnavnForEntitetensTekstfilIZipfil(entityservice);
             Path tekstfilPath = Filkyklop.hent().finnPathIMappe(hentUnzipmappeFile().toPath(), filnavnString);
-            CSVImportkyklop.hent().importerFraFileTilKjentEntitet(tekstfilPath,entityservice);
+            csvImportmester.importerFraFileTilKjentEntitet(tekstfilPath,entityservice);
         }
 
         return true;
@@ -430,7 +430,7 @@ public class Backupkyklop {
     }
 
 
-    public void leggTilEntitetservice(EntitetserviceAktig<? extends EntitetAktig> entitetservice) {
+    public void leggTilEntitetservice(EntitetserviceAktig<? extends EntitetAktig, ?> entitetservice) {
         if (entitetservicene == null) {
             entitetservicene = new ArrayList<>();
         }
@@ -441,7 +441,7 @@ public class Backupkyklop {
 
     public ArrayList<Infobit> hentAntallPosterIHverEntitet(){
         ArrayList<Infobit> infobitene = new ArrayList<>();
-        for (EntitetserviceAktig<? extends EntitetAktig> service: entitetservicene) {
+        for (EntitetserviceAktig<? extends EntitetAktig, ?> service: entitetservicene) {
             infobitene.add(new Infobit(service.hentEntitetsnavn(),service.finnAlle().size() + " poster"));
         }
         return infobitene;
@@ -449,7 +449,7 @@ public class Backupkyklop {
 
     public ArrayList<ArrayList<String>> hentEntiteterAntallposterSistendret(){
         ArrayList<ArrayList<String>> radene = new ArrayList<>();
-        for (EntitetserviceAktig<? extends EntitetAktig> service: entitetservicene) {
+        for (EntitetserviceAktig<? extends EntitetAktig, ?> service: entitetservicene) {
             ArrayList<String> rad = new ArrayList<>();
             rad.add(service.hentEntitetsnavn());
             rad.add(Integer.toString(service.finnAlle().size()));
@@ -498,7 +498,7 @@ public class Backupkyklop {
     public void printEntitetservicer() {
         System.out.println();
         System.out.println("ENTITETSERVICENE");
-        for (EntitetserviceAktig<?> entitetserviceAktig:entitetservicene) {
+        for (EntitetserviceAktig<?, ?> entitetserviceAktig:entitetservicene) {
             Loggekyklop.hent().loggDEBUG("Entitetservice " + entitetserviceAktig.hentEntitetsnavn());
         }
     }
