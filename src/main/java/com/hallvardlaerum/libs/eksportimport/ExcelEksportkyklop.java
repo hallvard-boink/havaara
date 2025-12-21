@@ -1,13 +1,11 @@
 package com.hallvardlaerum.libs.eksportimport;
 
-import com.hallvardlaerum.libs.database.EntitetAktig;
-import com.hallvardlaerum.libs.database.EntitetserviceAktig;
-import com.hallvardlaerum.libs.felter.Inspeksjonskyklop;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
+import com.hallvardlaerum.libs.felter.Inspeksjonskyklop;
 import com.hallvardlaerum.libs.felter.TekstKyklop;
 import com.hallvardlaerum.libs.filerogopplasting.Filkyklop;
 import com.hallvardlaerum.libs.filerogopplasting.StandardmappeEnum;
-import com.hallvardlaerum.libs.verktoy.Backupkyklop;
 import com.vaadin.flow.component.notification.Notification;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
@@ -55,7 +53,7 @@ public class ExcelEksportkyklop implements ExcelEksportkyklopAktig {
     @Override
     public <T> void eksporterArrayListAvEntiteterSomXLS(ArrayList<T> entiteteneArrayList, String strFilnavn) {
         if (entiteteneArrayList==null || entiteteneArrayList.isEmpty()) {
-            Loggekyklop.hent().loggADVARSEL("Arraylist av entiteter var tom, avbryter eksport til XLS");
+            Loggekyklop.bruk().loggADVARSEL("Arraylist av entiteter var tom, avbryter eksport til XLS");
             return;
         }
         this.strFilnavn = Filkyklop.hent().hentEllerOpprettStandardmappe(StandardmappeEnum.TEMP).getAbsolutePath() + "/" + strFilnavn;
@@ -108,7 +106,7 @@ public class ExcelEksportkyklop implements ExcelEksportkyklopAktig {
     @Override
     public void eksporterArrayListAvStrengerSomXLS(ArrayList<ArrayList<String>> radeneArrayList, String strFilnavn) {
         if (radeneArrayList==null || radeneArrayList.isEmpty()) {
-            Loggekyklop.hent().loggADVARSEL("Arraylist av strenger var tom, avbryter eksport til XLS");
+            Loggekyklop.bruk().loggADVARSEL("Arraylist av strenger var tom, avbryter eksport til XLS");
             return;
         }
         this.strFilnavn = Filkyklop.hent().hentEllerOpprettStandardmappe(StandardmappeEnum.TEMP).getAbsolutePath() + "/" + strFilnavn;
@@ -167,7 +165,7 @@ public class ExcelEksportkyklop implements ExcelEksportkyklopAktig {
             sheet = workbook.createSheet("Data");
 
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL(e.getMessage());
+            Loggekyklop.bruk().loggFEIL(e.getMessage());
         }
     }
 

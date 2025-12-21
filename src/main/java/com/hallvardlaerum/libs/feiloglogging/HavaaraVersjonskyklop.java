@@ -12,6 +12,7 @@ public class HavaaraVersjonskyklop extends Versjonskyklopmal{
 
     @Override
     public void byggOppVersjoner() {
+
         super.leggTilVersjon("1.8.0","2025-12-06","Tomme constructorer for bean injection",
                 "Fjernet innhold i alle constructorer som skal injiseres, slik at Allvitekyklop ikke kræsjer, og fikk RedigerEntityDialog til å virke.");
 

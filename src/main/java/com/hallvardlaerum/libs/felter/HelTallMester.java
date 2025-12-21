@@ -1,6 +1,7 @@
 package com.hallvardlaerum.libs.felter;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 
 import java.util.Locale;
 

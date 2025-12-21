@@ -1,6 +1,7 @@
 package com.hallvardlaerum.libs.database;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.TekstKyklop;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -42,7 +43,7 @@ public abstract class EntitetserviceMedForelderMal
         }
 
         if (!(o instanceof EntitetMedForelderAktig<?>)) {
-            Loggekyklop.hent().loggFEIL("Objektet o har type " + o.getClass().getName() +
+            Loggekyklop.bruk().loggFEIL("Objektet o har type " + o.getClass().getName() +
                     " som ikke ekstenderer EntitetMedForelderAktig. Avbryter");
             return;
         }
@@ -52,18 +53,18 @@ public abstract class EntitetserviceMedForelderMal
                 String strUuid = TekstKyklop.hent().hentSisteIStrengMedDelimiter(s,"@");
                 ForelderKlasse forelderFunnet = forelderentitetservice.finnEtterUUID(strUuid);
                 if (forelderFunnet==null) {
-                    Loggekyklop.hent().loggADVARSEL("Fant ikke forelderklasse " + forelderklasse.getName() +
+                    Loggekyklop.bruk().loggADVARSEL("Fant ikke forelderklasse " + forelderklasse.getName() +
                             " med uuid " + strUuid + " til entiteten " + entitet.hentBeskrivendeNavn());
                 } else {
                     field.set(entitet,forelderFunnet);
                 }
             }
         } catch (IllegalArgumentException e) {
-                  Loggekyklop.hent().loggFEIL("Feltet \"" + field.getName() + "\" finnes ikke i entiteten Bil.");
-              } catch (IllegalAccessException e) {
-                  Loggekyklop.hent().loggFEIL("Cannot access field: " + field.getName());
-              } catch (Exception e) {
-                  Loggekyklop.hent().loggFEIL("An error occurred while updating the field: " + e.getMessage());
+                Loggekyklop.bruk().loggFEIL("Feltet \"" + field.getName() + "\" finnes ikke i entiteten Bil.");
+          } catch (IllegalAccessException e) {
+                Loggekyklop.bruk().loggFEIL("Cannot access field: " + field.getName());
+          } catch (Exception e) {
+                Loggekyklop.bruk().loggFEIL("An error occurred while updating the field: " + e.getMessage());
         }
 
     }

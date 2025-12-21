@@ -12,7 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
-public class Loggekyklop {
+public class Loggekyklop implements LoggekyklopAktig{
     private static Loggekyklop loggekyklop;
 
     public enum Nivaa {
@@ -24,7 +24,37 @@ public class Loggekyklop {
     private boolean visNotifikasjonerTilBrukerBoolean = true;
     private boolean forrigeVisNotifikasjonerTilBrukerBoolean = true;
     private BufferedWriter bufferedWriter;
+
+
     private Loggekyklop() {
+    }
+
+
+    public static LoggekyklopAktig bruk() {
+        return (LoggekyklopAktig) hent();
+    }
+
+    public static Loggekyklop hent(){
+        if (loggekyklop==null) {
+            loggekyklop = new Loggekyklop();
+        }
+        return loggekyklop;
+    }
+
+    /**
+     * Forbered til bruk av loggefil ved import
+     */
+
+    @Override
+    public void forberedTilImportloggTilFil(){
+        huskStatus();
+        settNivaaINFO();
+        initierLoggfil();
+    }
+
+    @Override
+    public void avsluttImportloggTilFil(){
+        lukkLoggfil();
     }
 
     /**
@@ -65,33 +95,33 @@ public class Loggekyklop {
     }
 
 
-    public static Loggekyklop hent(){
-        if (loggekyklop == null) {
-            loggekyklop = new Loggekyklop();
-        }
-
-        return loggekyklop;
-    }
-
     public Nivaa getNivaa() {
         return nivaa;
     }
 
+    @Override
     public void settNivaaINFO() { nivaa = Nivaa.INFO;    }
+    @Override
     public void settNivaaDEBUG() { nivaa = Nivaa.DEBUG;    }
+    @Override
     public void settNivaaADVARSEL() { nivaa = Nivaa.ADVARSEL;    }
+    @Override
     public void settNivaaFEIL() { nivaa = Nivaa.FEIL;    }
+    @Override
     public void settNivaaKRITISK_FEIL() { nivaa = Nivaa.KRITISK_FEIL;    }
 
+    @Override
     public void ikkeVisNotifikasjonerTilBruker(){
         visNotifikasjonerTilBrukerBoolean = false;
     }
 
+    @Override
     public void visNotifikasjonerTilBruker(){
         visNotifikasjonerTilBrukerBoolean = true;
     }
 
 
+    @Override
     public void loggKRITISK_FEIL(String strMelding) {
         printLog(Nivaa.KRITISK_FEIL,strMelding);  //skal alltid vises
     }
@@ -100,6 +130,7 @@ public class Loggekyklop {
         printLog(Nivaa.KRITISK_FEIL,strMelding, true);  //skal alltid vises
     }
 
+    @Override
     public void loggFEIL(String strMelding) {
         if (nivaa.ordinal() >= Nivaa.FEIL.ordinal()) {
             printLog(Nivaa.FEIL,strMelding);
@@ -112,6 +143,7 @@ public class Loggekyklop {
         }
     }
 
+    @Override
     public void loggADVARSEL(String strMelding) {
         if (nivaa.ordinal() >= Nivaa.ADVARSEL.ordinal()) {
             printLog(Nivaa.ADVARSEL,strMelding);
@@ -125,6 +157,7 @@ public class Loggekyklop {
     }
 
 
+    @Override
     public void loggDEBUG(String strMelding) {
         if (nivaa.ordinal() >= Nivaa.DEBUG.ordinal()) {
             printLog(Nivaa.DEBUG,strMelding);
@@ -138,12 +171,14 @@ public class Loggekyklop {
     }
 
 
+    @Override
     public void loggINFO(String strMelding) {
         if (nivaa.ordinal() == Nivaa.INFO.ordinal()) {
             printLog(Nivaa.INFO,strMelding);
         }
     }
 
+    @Override
     public void loggTEST(String strMelding){
         System.out.println(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTidSekund() + " | " +
                 getCallingMethod(4).toString() + " TEST : " + strMelding);
@@ -160,19 +195,18 @@ public class Loggekyklop {
     }
 
     private void printLog(Nivaa nivaa, String strMelding, boolean skrivTilFilBoolean){
-
         String strNaavaerendeTidspunkt = Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTidSekund();
-        if (skrivTilFilBoolean) {
+        String radString = strNaavaerendeTidspunkt + " | " + getCallingMethod().toString() + " " + nivaa.toString() + " : " + strMelding + "\n";
 
+        if (skrivTilFilBoolean) {
             try {
-                bufferedWriter.write(strNaavaerendeTidspunkt + " | " + getCallingMethod().toString() + " " + nivaa.toString() + " : " + strMelding + "\n");
+                bufferedWriter.write(radString);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } else {
-            System.out.println(strNaavaerendeTidspunkt + " | " + getCallingMethod().toString() + " " + nivaa.toString() + " : " + strMelding);
         }
 
+        System.out.print(radString);
         evtVisNotifikasjon(strMelding);
 
     }
@@ -189,7 +223,7 @@ public class Loggekyklop {
     }
 
     public StackTraceElement getCallingMethod() {
-        return getCallingMethod(5); //Var tidligere 4
+        return getCallingMethod(6); //Var tidligere 4
     }
 
 
@@ -239,9 +273,6 @@ public class Loggekyklop {
         return strFiksetTekst;
 
     }
-
-
-
 
 
 }

@@ -4,12 +4,31 @@ import com.hallvardlaerum.libs.database.EntitetAktig;
 
 import java.util.ArrayList;
 
-public interface CSVImportassistentAktig {
+public interface CSVImportassistentAktig<Entitet extends EntitetAktig> {
 
     void forberedImport();
 
-    EntitetAktig konverterFraTekstRadOgLagre(ArrayList<String> feltnavnCSVArrayList, String[] celler);
+    Entitet konverterFraTekstRadOgLagre(ArrayList<String> feltnavnCSVArrayList, String[] celler);
 
     void ryddOppEtterImport();
 
+    //        return entitet;
+    //    }
+
+
+    void lesInnFeltnavnogCeller(ArrayList<String> feltnavnCSVArrayList, String[] celler);
+
+    String hentImportRadString();
+
+    Integer parseInt(String integerString);
+
+    String hentVerdier(boolean setterInnLinjeskift, boolean setterInnFeltnavn, String... feltnavnene);
+
+    String hentVerdi(String feltnavn);
+
+    String hentFeltnavnCSVString();
+
+    Integer finnPosisjon(String feltnavn);
+
+    String hentcellerString();
 }

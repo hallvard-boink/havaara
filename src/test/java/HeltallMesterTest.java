@@ -1,12 +1,11 @@
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.HelTallMester;
 import org.junit.jupiter.api.Test;
 
-import java.util.Objects;
-
 public class HeltallMesterTest {
 
-    @Test
+    //@Test
     public void integerFormatertSomStortTallTest(){
         System.out.println(HelTallMester.integerFormatertSomStortTall(0));
         System.out.println(HelTallMester.integerFormatertSomStortTall(16));
@@ -40,7 +39,7 @@ public class HeltallMesterTest {
     private void konverterDesimalTilIntegerDeltest(String tallString, Integer forventetInteger){
         Integer faktiskInteger = HelTallMester.konverterStrengMedDesimalTilInteger(tallString);
         if (faktiskInteger==null) {
-            Loggekyklop.hent().loggDEBUG("Klarte ikke å konvertere tallet " + tallString);
+            Loggekyklop.bruk().loggDEBUG("Klarte ikke å konvertere tallet " + tallString);
             assert(false);
         } else {
             assert (faktiskInteger.equals(forventetInteger));

@@ -72,6 +72,10 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
 
     }
 
+    public void opprettLayout(VersjonskyklopAktig versjonskyklop, boolean byggOppMenyenManuelt) {
+
+    }
+
     private HorizontalLayout opprettLayout_knapperad() {
         HorizontalLayout knapperHorizontalLayout = new HorizontalLayout();
         knapperHorizontalLayout.add(Backupkyklop.hent().hentBackupLenkeButton(versjonskyklop.getApplikasjonsNavnString()));

@@ -3,6 +3,7 @@ package com.hallvardlaerum.libs.ui;
 import com.hallvardlaerum.libs.database.EntitetAktig;
 import com.hallvardlaerum.libs.database.EntitetserviceAktig;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -31,7 +32,7 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
         if (forelderEntitetservice.hentRedigeringsomraadeAktig() instanceof RedigeringsomraadeMal<?>) {
             this.forelderRedigeringsomraade = (RedigeringsomraadeMal<ForelderKlasse>) forelderEntitetservice.hentRedigeringsomraadeAktig();
         } else {
-            Loggekyklop.hent().loggFEIL("Foreldereredigeringsområdet bruker ikke RedigeringsomraadeMal, avbryter");
+            Loggekyklop.bruk().loggFEIL("Foreldereredigeringsområdet bruker ikke RedigeringsomraadeMal, avbryter");
             return;
         }
 

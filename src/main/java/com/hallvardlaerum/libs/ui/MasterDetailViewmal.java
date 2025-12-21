@@ -54,7 +54,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         Repo extends JpaRepository<Entitet, UUID> & JpaSpecificationExecutor<Entitet> & RepositoryTillegg<Entitet>>
         extends HorizontalLayout implements ViewmalAktig<Entitet, Repo> {
     private EntitetserviceAktig<Entitet, ?> entitetserviceAktig;
-    private Grid<Entitet> grid;
+    private Grid<Entitet> soekeGrid;
     private HorizontalLayout layoutRedigeringsknapper;
     private HorizontalLayout layoutSoekeknapper;
 
@@ -75,6 +75,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     private SubMenu verktoeySubMenu;
 
     private H2 vinduTittel;
+    private GridInnholdsTypeEnum gridInnholdsTypeEnum = GridInnholdsTypeEnum.ALLERADER;
 
     public MasterDetailViewmal() {
     }
@@ -112,11 +113,12 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     @Override
     public HorizontalLayout hentKnapperadRedigeringsfelt() { return layoutRedigeringsknapper;   }
 
-
+    @Override
     public void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade) {
         opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL);
     }
 
+    @Override
     public void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade, SplitLayout.Orientation orientering){
         opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL, 50D);
     }
@@ -125,7 +127,16 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     public void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig,
                               RedigeringsomraadeAktig<Entitet> redigeringsomraade,
                               SplitLayout.Orientation orientering,
-                              Double splitPositionDouble)
+                              Double splitPositionDouble) {
+        opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL, 50D, GridInnholdsTypeEnum.ALLERADER);
+    }
+
+    @Override
+    public void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig,
+                              RedigeringsomraadeAktig<Entitet> redigeringsomraade,
+                              SplitLayout.Orientation orientering,
+                              Double splitPositionDouble,
+                              GridInnholdsTypeEnum gridInnholdsTypeEnum)
     {
         this.entitetserviceAktig = entitetserviceAktig;
         this.redigeringsomraade = redigeringsomraade;
@@ -134,7 +145,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         if (redigeringsomraade instanceof VerticalLayout) {
             this.redigeringsomraadeSomVerticalLayout = (VerticalLayout) redigeringsomraade;
         } else {
-            Loggekyklop.hent().loggFEIL("Redigeringsomraade må baseres på VerticalLayout, slik Redigeringsomraademal gjør det.");
+            Loggekyklop.bruk().loggFEIL("Redigeringsomraade må baseres på VerticalLayout, slik Redigeringsomraademal gjør det.");
         }
 
         splitLayout = new SplitLayout();
@@ -147,7 +158,15 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         setSizeFull();
 
         instansOpprettGrid();
-        tilpassKolonnerOgOpprettFilteradIGrid();
+
+        if (gridInnholdsTypeEnum == GridInnholdsTypeEnum.ALLERADER) {
+            headerRowFilterfelter = Gridkyklop.hent().alleRaderTilpassKolonnerOgOpprettFilteradIGrid(soekeGrid);
+        } else if (gridInnholdsTypeEnum == GridInnholdsTypeEnum.PORSJONSVIS) {
+            headerRowFilterfelter = Gridkyklop.hent().porsjonsviseRaderTilpassKolonnerOgOpprettFilteradIGrid(soekeGrid);
+        } else {
+            headerRowFilterfelter = Gridkyklop.hent().alleRaderTilpassKolonnerOgOpprettFilteradIGrid(soekeGrid);
+        }
+
         instansOpprettFilterFelter();
         tilpassFilterfelterIGrid();
 
@@ -158,25 +177,9 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
 
 
     public Grid<Entitet> hentGrid(){
-        return grid;
+        return soekeGrid;
     }
 
-
-
-    private void tilpassKolonnerOgOpprettFilteradIGrid(){
-        List<Grid.Column<Entitet>> kolonner = grid.getColumns();
-        for (Grid.Column<Entitet> kol:kolonner){
-            kol.setResizable(true);
-            kol.setSortable(true);
-        }
-        grid.setItems(entitetserviceAktig.finnAlle());
-        grid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        grid.setSizeFull();
-
-        grid.getHeaderRows().clear();
-        headerRowFilterfelter = grid.appendHeaderRow();
-
-    }
 
     @Override
     public <C extends Component> C leggTilFilterfelt(Integer cellIndex, C component, String feltnavn) {
@@ -191,7 +194,6 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         }
 
         headerRowFilterfelter.getCells().get(cellIndex).setComponent(component);
-
         return component;
     }
 
@@ -202,7 +204,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
 
 
     private void tilpassFilterfelterIGrid() {
-        List<HeaderRow> headerRows = grid.getHeaderRows();
+        List<HeaderRow> headerRows = soekeGrid.getHeaderRows();
         List<HeaderRow.HeaderCell> celler = headerRows.getLast().getCells();
         for (HeaderRow.HeaderCell cell : celler) {
             if (cell.getComponent() instanceof TextField) {
@@ -264,17 +266,16 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         layoutSoekeknapper.setWidthFull();
 
 
-        grid = new Grid<>();
-        grid.addSelectionListener(e -> {
-            if (e.getFirstSelectedItem().isPresent()) {
-                redigeringsomraade.setEntitet(e.getFirstSelectedItem().get());
-                viewCRUDStatus = ViewCRUDStatusEnum.POST_KAN_REDIGERES;
-                oppdaterRedigeringsomraade();
-            }
+        soekeGrid = new Grid<>();
+        soekeGrid.addItemClickListener(e -> {
+            redigeringsomraade.setEntitet(e.getItem());
+            viewCRUDStatus = ViewCRUDStatusEnum.POST_KAN_REDIGERES;
+            oppdaterRedigeringsomraade();
         });
-        grid.setSizeFull();
 
-        verticalLayout.add(layoutSoekeknapper, grid);
+        soekeGrid.setSizeFull();
+
+        verticalLayout.add(layoutSoekeknapper, soekeGrid);
         verticalLayout.setSizeFull();
         return verticalLayout;
 
@@ -302,14 +303,14 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         MenuItem opprettTestdataMenuItem = verktoeySubMenu.addItem("Opprett testdata");
         opprettTestdataMenuItem.addClickListener(e -> {
             entitetserviceAktig.opprettTestdata();
-            grid.setItems(entitetserviceAktig.finnAlle());
+            soekeGrid.setItems(entitetserviceAktig.finnAlle());
             oppdaterSoekeomraadeEtterRedigeringAvEntitet();
         });
 
         MenuItem slettAlleMenuItem = verktoeySubMenu.addItem("Slett alle");
         slettAlleMenuItem.addClickListener(e -> {
             entitetserviceAktig.slettAlle();
-            grid.setItems(entitetserviceAktig.finnAlle());
+            soekeGrid.setItems(entitetserviceAktig.finnAlle());
             oppdaterSoekeomraadeEtterRedigeringAvEntitet();
         });
 
@@ -322,7 +323,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         MenuItem importerFraCSVMenuItem = verktoeySubMenu.addItem("Importer fra CSV");
         importerFraCSVMenuItem.addClickListener(e -> {
             new CSVImportmester().velgImportfilOgKjoerImport(entitetserviceAktig);
-            grid.setItems(entitetserviceAktig.finnAlle());
+            soekeGrid.setItems(entitetserviceAktig.finnAlle());
             oppdaterSoekeomraadeEtterRedigeringAvEntitet();
         });
 
@@ -417,9 +418,9 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         instansTilpassNyopprettetEntitet();
         oppdaterRedigeringsomraade(); // må komme før select(entitet), fordi select fyrer selectionEvent, som setter viewCRUSTATUS.KAN_REDIGERES
 
-        if (grid.getGenericDataView() instanceof ListDataView<?,?>) {
-            grid.getListDataView().addItem(entitet);
-            grid.select(entitet); // fyrer SelectionEvent, som oppdaterer innholdet i Redigeringsområdet
+        if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
+            soekeGrid.getListDataView().addItem(entitet);
+            soekeGrid.select(entitet); // fyrer SelectionEvent, som oppdaterer innholdet i Redigeringsområdet
 
         } else {  //LazyDataView
             //kan ikke legge til direkte, har ikke lyst til å lagre entitet og fyre setFilter heller
@@ -451,8 +452,8 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         dialog.setHeader("Slette " + entitetserviceAktig.hentEntitetsnavn().toLowerCase() + "?");
         dialog.setText("Er du sikker på at du vil slette " + entitetserviceAktig.hentVisningsnavn(redigeringsomraade.getEntitet()) + "?");
         dialog.addConfirmListener(e -> {
-            if (grid.getGenericDataView() instanceof ListDataView<?,?>) {
-                grid.getListDataView().removeItem(redigeringsomraade.getEntitet());
+            if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
+                soekeGrid.getListDataView().removeItem(redigeringsomraade.getEntitet());
             }
             entitetserviceAktig.slett(redigeringsomraade.getEntitet());
             redigeringsomraade.setEntitet(null);
@@ -497,7 +498,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     ){
         final CallbackDataProvider<Entitet, String> dataProvider = DataProvider.fromFilteringCallbacks(fetchCallback, countCallback);
         filterProvider = dataProvider.withConfigurableFilter();
-        grid.setItems(filterProvider);
+        soekeGrid.setItems(filterProvider);
         settFilter();
     }
 
@@ -508,10 +509,10 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     public void brukFiltreIDataprovider(ArrayList<SearchCriteria> filtre, EntityFilterSpecification.OperatorEnum operatorEnum) {
         entitetserviceAktig.setEntityFilterSpecification(new EntityFilterSpecification<>(filtre, operatorEnum));
         filterProvider.setFilter(""); // for å applisere filteret. Det finnes antagelig mer elegante måter å gjøre det på
-        if (this.grid.getDataProvider() instanceof ListDataView) {
-            this.grid.getListDataView().refreshAll();
+        if (this.soekeGrid.getDataProvider() instanceof ListDataView) {
+            this.soekeGrid.getListDataView().refreshAll();
         } else {
-            this.grid.getDataProvider().refreshAll();
+            this.soekeGrid.getDataProvider().refreshAll();
         }
     }
 
@@ -525,19 +526,19 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         oppdaterAntallRaderNederstIGrid();
 
         if (redigeringsomraade.getEntitet() != null) {
-            if (grid.getDataProvider() instanceof ListDataView) {
+            if (soekeGrid.getDataProvider() instanceof ListDataView) {
                 if (viewCRUDStatus.equals(ViewCRUDStatusEnum.POST_KAN_REDIGERES)) {
-                    grid.getListDataView().refreshItem(redigeringsomraade.getEntitet());
+                    soekeGrid.getListDataView().refreshItem(redigeringsomraade.getEntitet());
                 } else if (viewCRUDStatus == ViewCRUDStatusEnum.NY) {
-                    grid.getListDataView().refreshAll();
+                    soekeGrid.getListDataView().refreshAll();
                 }
             } else {
                 if (viewCRUDStatus.equals(ViewCRUDStatusEnum.POST_KAN_REDIGERES)) {
-                    grid.getDataProvider().refreshItem(redigeringsomraade.getEntitet());
+                    soekeGrid.getDataProvider().refreshItem(redigeringsomraade.getEntitet());
                 } else if (viewCRUDStatus == ViewCRUDStatusEnum.NY) {
                     settFilter();
 
-                    grid.select(redigeringsomraade.getEntitet());
+                    soekeGrid.select(redigeringsomraade.getEntitet());
 
                 }
             }
@@ -556,26 +557,26 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
 
     @Override
     public void oppdaterSoekeomraade(){
-        if (grid.getDataProvider() instanceof ListDataView) {
-            grid.setItems(entitetserviceAktig.finnAlle());
+        if (soekeGrid.getDataProvider() instanceof ListDataView) {
+            soekeGrid.setItems(entitetserviceAktig.finnAlle());
         } else {
             settFilter();
         }
 
         if (redigeringsomraade.getEntitet()!=null) {
-            grid.select(redigeringsomraade.getEntitet());
+            soekeGrid.select(redigeringsomraade.getEntitet());
         }
     }
 
     private void scrollTilValgtRad(){
-        if (!grid.isDetailsVisible(redigeringsomraade.getEntitet())){
-            if (grid.getDataProvider() instanceof GridListDataView<?>) {
-                for (int i = 0; i < grid.getListDataView().getItemCount(); i++) {
-                    if (redigeringsomraade.getEntitet().getUuid().equals(grid.getListDataView().getItem(i).getUuid())) {
-                        grid.scrollToIndex(i);
+        if (!soekeGrid.isDetailsVisible(redigeringsomraade.getEntitet())){
+            if (soekeGrid.getDataProvider() instanceof GridListDataView<?>) {
+                for (int i = 0; i < soekeGrid.getListDataView().getItemCount(); i++) {
+                    if (redigeringsomraade.getEntitet().getUuid().equals(soekeGrid.getListDataView().getItem(i).getUuid())) {
+                        soekeGrid.scrollToIndex(i);
                     }
                 }
-            } else if (grid.getDataProvider()!=null) {
+            } else if (soekeGrid.getDataProvider()!=null) {
 //                int antallRader = entitetserviceAktig.tellAntallMedSpecification();  // VIRKER IKKE ENNÅ
 //                for (int i = 0; i < antallRader; i++) {
 //                    if (redigeringsomraade.getEntitet().getUuid().equals(grid.getDataProvider().)) {
@@ -587,9 +588,9 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     }
 
     private void oppdaterAntallRaderNederstIGrid(){
-        Grid.Column<Entitet> column = grid.getColumns().getFirst();
-        if (grid.getDataProvider() instanceof GridListDataView<?>) {
-            column.setFooter("Antall: " + grid.getListDataView().getItemCount());
+        Grid.Column<Entitet> column = soekeGrid.getColumns().getFirst();
+        if (soekeGrid.getDataProvider() instanceof GridListDataView<?>) {
+            column.setFooter("Antall: " + soekeGrid.getListDataView().getItemCount());
         } else {
             int antallRader = entitetserviceAktig.tellAntallMedSpecification();
             column.setFooter("Antall: " + antallRader);
@@ -610,13 +611,13 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     @Override
     public void oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(Entitet entitet) {
         redigeringsomraade.setEntitet(entitet);
-        if (grid.getGenericDataView() instanceof ListDataView<?,?>) {
-            grid.setItems(entitetserviceAktig.finnAlle());
-            grid.getDataProvider().refreshAll();
+        if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
+            soekeGrid.setItems(entitetserviceAktig.finnAlle());
+            soekeGrid.getDataProvider().refreshAll();
         } else {
             settFilter();
         }
-        grid.select(redigeringsomraade.getEntitet());
+        soekeGrid.select(redigeringsomraade.getEntitet());
 
         oppdaterAntallRaderNederstIGrid();
     }

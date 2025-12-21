@@ -8,6 +8,7 @@ import com.hallvardlaerum.libs.database.RepositoryTillegg;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -40,6 +41,12 @@ public interface ViewmalAktig<Entitet extends EntitetAktig,
     void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade);
     void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade, SplitLayout.Orientation orientering);
     void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig, RedigeringsomraadeAktig<Entitet> redigeringsomraade, SplitLayout.Orientation orientering, Double splitPositionDouble);
+    void opprettLayout(EntitetserviceAktig<Entitet, Repo> entitetserviceAktig,
+                       RedigeringsomraadeAktig<Entitet> redigeringsomraade,
+                       SplitLayout.Orientation orientering,
+                       Double splitPositionDouble,
+                       GridInnholdsTypeEnum gridInnholdsTypeEnum);
+
 
     <C extends Component> C leggTilFilterfelt(Integer cellIndex, C component, String placeholder);
     HeaderRow getHeaderRowFilterfelter(); // tatt med i tilfelle utvikler trenger mer avansert tilpasning

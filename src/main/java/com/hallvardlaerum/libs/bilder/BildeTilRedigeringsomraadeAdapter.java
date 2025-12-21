@@ -2,6 +2,7 @@ package com.hallvardlaerum.libs.bilder;
 
 import com.hallvardlaerum.libs.database.EntitetAktig;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.ui.RedigeringsomraadeAktig;
 import com.hallvardlaerum.libs.ui.ViewmalAktig;
 import com.vaadin.flow.component.Component;
@@ -34,7 +35,7 @@ public class BildeTilRedigeringsomraadeAdapter<Bildeklasse extends BildeentitetA
         if (entitet instanceof BildeentitetAktig<?>) {
             bilderedigeringsomraade.setEntitet((Bildeklasse) entitet);
         } else {
-            Loggekyklop.hent().loggFEIL("Entiteten er ikke av type BildeentitetAktig, avbryter");
+            Loggekyklop.bruk().loggFEIL("Entiteten er ikke av type BildeentitetAktig, avbryter");
         }
     }
 
@@ -89,10 +90,9 @@ public class BildeTilRedigeringsomraadeAdapter<Bildeklasse extends BildeentitetA
     }
 
 
-
     @Override
     public Binder<EntitetAktig> hentBinder() {
-        Loggekyklop.hent().loggFEIL("hentBinder er ikke implementert i RedigeringsomraadeAdapter ennå, avbryter");
+        Loggekyklop.bruk().loggFEIL("hentBinder er ikke implementert i RedigeringsomraadeAdapter ennå, avbryter");
         return null;
     }
 

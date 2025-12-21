@@ -1,7 +1,7 @@
 package com.hallvardlaerum.libs.database;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
-import com.hallvardlaerum.libs.verktoy.InitieringsEgnet;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -126,7 +126,7 @@ public abstract class EntitetserviceMal<Entitet extends EntitetAktig,
             repository.deleteAll();
             repository.flush();
         } catch (Exception e) {
-            Loggekyklop.hent().loggADVARSEL("Klarte ikke å slette alle i " + hentEntitetsnavn());
+            Loggekyklop.bruk().loggADVARSEL("Klarte ikke å slette alle i " + hentEntitetsnavn());
             return false;
         }
         return true;
@@ -140,7 +140,7 @@ public abstract class EntitetserviceMal<Entitet extends EntitetAktig,
 
         Optional<Entitet> optional = repository.findById(UUID.fromString(s));
         if (optional.isEmpty()) {
-            Loggekyklop.hent().loggADVARSEL("Fant ikke entiteten " + klasse.getName() + " med UUID " + s );
+            Loggekyklop.bruk().loggADVARSEL("Fant ikke entiteten " + klasse.getName() + " med UUID " + s );
             return null;
         } else {
             return optional.get();

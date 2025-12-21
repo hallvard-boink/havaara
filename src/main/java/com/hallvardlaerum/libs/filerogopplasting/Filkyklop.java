@@ -1,6 +1,7 @@
 package com.hallvardlaerum.libs.filerogopplasting;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.HelTallMester;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -33,10 +34,10 @@ public class Filkyklop {
                 if (okBoolean) {
                     return fil;
                 } else {
-                    Loggekyklop.hent().loggFEIL("Klarte ikke å opprette filen " + fil.getAbsolutePath() + ", avbryter");
+                    Loggekyklop.bruk().loggFEIL("Klarte ikke å opprette filen " + fil.getAbsolutePath() + ", avbryter");
                 }
             } catch (IOException e) {
-                Loggekyklop.hent().loggFEIL("Feil ved oppretting av filen " + fil.getAbsolutePath() + ", avbryter");
+                Loggekyklop.bruk().loggFEIL("Feil ved oppretting av filen " + fil.getAbsolutePath() + ", avbryter");
                 return null;
             }
         }
@@ -70,12 +71,12 @@ public class Filkyklop {
 
     public Anchor hentNedlastingsButtonAnchor(String filnavnString, StandardmappeEnum standardmappeEnum, String tekstPaaButtonString, ComponentEventListener<ClickEvent<Button>> clicklistener){
         if (filnavnString==null ) {
-            Loggekyklop.hent().loggFEIL("filnavnString er null, avbryter");
+            Loggekyklop.bruk().loggFEIL("filnavnString er null, avbryter");
             return null;
         }
 
         if (standardmappeEnum==null) {
-            Loggekyklop.hent().loggFEIL("StandardmappeEnum er null, avbryter");
+            Loggekyklop.bruk().loggFEIL("StandardmappeEnum er null, avbryter");
             return null;
         }
 
@@ -98,7 +99,7 @@ public class Filkyklop {
 
     public File hentEllerOpprettStandardmappe(StandardmappeEnum standardmappeEnum) {
         if (rotmappeFile==null) {
-            Loggekyklop.hent().loggFEIL("RotmappeFile er ikke initiert. Du har sannsynligvis glemt å kjøre Versjonskyklop.hent().setApplikasjonsKortnavnString() ved oppstart. Avbryter");
+            Loggekyklop.bruk().loggFEIL("RotmappeFile er ikke initiert. Du har sannsynligvis glemt å kjøre Versjonskyklop.hent().setApplikasjonsKortnavnString() ved oppstart. Avbryter");
             return null;
         }
         File mappeFile;
@@ -106,7 +107,7 @@ public class Filkyklop {
         try {
             mappeFile = new File(rotmappeFile.getCanonicalPath() + "/" + standardmappeEnum.getMappenavn());
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL("Klarte ikke finne CanonicalPath for rotmappeFile. Avbryter.");
+            Loggekyklop.bruk().loggFEIL("Klarte ikke finne CanonicalPath for rotmappeFile. Avbryter.");
             return null;
         }
 
@@ -118,7 +119,7 @@ public class Filkyklop {
         if (okBoolean) {
             return mappeFile;
         } else {
-            Loggekyklop.hent().loggADVARSEL("Klarte ikke opprette standardmappe " + mappeFile.getName() + " (" + standardmappeEnum.getMappenavn() + "), avbryter.");
+            Loggekyklop.bruk().loggADVARSEL("Klarte ikke opprette standardmappe " + mappeFile.getName() + " (" + standardmappeEnum.getMappenavn() + "), avbryter.");
             return null;
         }
 
@@ -133,7 +134,7 @@ public class Filkyklop {
      */
     public boolean initierRotmappeFile(String rotmappeString){
         if (rotmappeString==null || rotmappeString.isEmpty()) {
-            Loggekyklop.hent().loggFEIL("Appnavnet er ikke oppgitt, avbryter");
+            Loggekyklop.bruk().loggFEIL("Appnavnet er ikke oppgitt, avbryter");
             return false;
         }
         String rotmappenavnVasketString = rotmappeString.toLowerCase();
@@ -159,7 +160,7 @@ public class Filkyklop {
                 }
             }
         } catch (IOException e) {
-            Loggekyklop.hent().loggADVARSEL("Klarte ikke hente canonicalFile fra mappeDefaultFile. Er ikke så farlig, fortsetter.");
+            Loggekyklop.bruk().loggADVARSEL("Klarte ikke hente canonicalFile fra mappeDefaultFile. Er ikke så farlig, fortsetter.");
         }
 
         File mappeDefaultTomcat10File = new File("/opt/tomcat10/webapps/" + rotmappenavnVasketString);
@@ -180,7 +181,7 @@ public class Filkyklop {
             return true;
         }
 
-        Loggekyklop.hent().loggFEIL("Du må installere tomcat under /opt, slik at applikasjonene kommer under /opt/tomcat/webapps " +
+        Loggekyklop.bruk().loggFEIL("Du må installere tomcat under /opt, slik at applikasjonene kommer under /opt/tomcat/webapps " +
                 "eller /opt/tomcat10/webapps. Avbryter");
 
         return false;
@@ -196,14 +197,14 @@ public class Filkyklop {
             for (Path entry:directoryStream) {
                 boolean done = entry.toFile().delete();
                 if (!done){
-                    Loggekyklop.hent().loggFEIL("Klarte ikke å slette filen " + entry.getFileName().toString() + ", avbryter");
+                    Loggekyklop.bruk().loggFEIL("Klarte ikke å slette filen " + entry.getFileName().toString() + ", avbryter");
                     return false;
                 }
             }
 
             return true;
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL("Klarte ikke å lese fra mappen " + mappePath.getFileName());
+            Loggekyklop.bruk().loggFEIL("Klarte ikke å lese fra mappen " + mappePath.getFileName());
             return false;
         }
 
@@ -218,7 +219,7 @@ public class Filkyklop {
                 }
             }
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL("Klarte ikke å få tak i filene i " + mappePath.toString() + ", avbryter");
+            Loggekyklop.bruk().loggFEIL("Klarte ikke å få tak i filene i " + mappePath.toString() + ", avbryter");
             return null;
         }
         return null;
@@ -300,7 +301,7 @@ public class Filkyklop {
 
         int intPos = strFilnavn.lastIndexOf(".");
         if (intPos== -1) {
-            Loggekyklop.hent().loggFEIL("Filnavnet "  + strFilnavn + " mangler punktum");
+            Loggekyklop.bruk().loggFEIL("Filnavnet "  + strFilnavn + " mangler punktum");
             return "";
         } else {
             StringBuilder sb = new StringBuilder();
@@ -319,7 +320,7 @@ public class Filkyklop {
         if (!mappe.exists()){
             boolean suksess = mappe.mkdir();
             if (!suksess) {
-                Loggekyklop.hent().loggFEIL("Klarte ikke å opprette mappen " + mappe.getName());
+                Loggekyklop.bruk().loggFEIL("Klarte ikke å opprette mappen " + mappe.getName());
             }
         }
         return new File(filkategori.getMappeNavn() + "/" + filnavn);
@@ -387,7 +388,7 @@ public class Filkyklop {
         if (filSomSkalSlettes.exists()) {
             return filSomSkalSlettes.delete();
         } else {
-            Loggekyklop.hent().loggFEIL("Filen " + filSomSkalSlettes.getAbsolutePath() + " som skulle slettes ble ikke funnet. Avbryter.");
+            Loggekyklop.bruk().loggFEIL("Filen " + filSomSkalSlettes.getAbsolutePath() + " som skulle slettes ble ikke funnet. Avbryter.");
             return false;
         }
 

@@ -20,6 +20,12 @@ public interface  RedigeringsomraademalAktig<Entitet extends EntitetAktig>  {
     void lesBean();
     void skrivBean();
 
+    Entitet hentEntitet();
+
+    void settEntitet(Entitet entitet);
+
+    void settFokusKomponent(Component fokusComponent);
+
     void setFokusComponent(Component fokusComponent);
 
     FormLayout hentFormLayoutFraTab(Integer tabIndex);

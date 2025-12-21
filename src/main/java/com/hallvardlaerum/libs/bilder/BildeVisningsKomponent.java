@@ -1,6 +1,7 @@
 package com.hallvardlaerum.libs.bilder;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.filerogopplasting.Filkategori;
 import com.vaadin.flow.component.html.Image;
 
@@ -41,7 +42,7 @@ public class BildeVisningsKomponent extends Image implements BildeVisningsKompon
                     throw new RuntimeException(e);
                 }
             } else {
-                Loggekyklop.hent().loggADVARSEL("Filen finnes ikke");
+                Loggekyklop.bruk().loggADVARSEL("Filen finnes ikke");
                 byggOppBildeFraBytes(null);
             }
 

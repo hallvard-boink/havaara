@@ -6,6 +6,7 @@ import com.hallvardlaerum.libs.eksportimport.CSVEksportkyklop;
 import com.hallvardlaerum.libs.eksportimport.CSVImportmester;
 import com.hallvardlaerum.libs.feiloglogging.Infobit;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.Datokyklop;
 import com.hallvardlaerum.libs.felter.Enhetskonvertering;
 import com.hallvardlaerum.libs.felter.Inspeksjonskyklop;
@@ -125,11 +126,11 @@ public class Backupkyklop {
         Runnable task = new Runnable() {
             public void run() {
                 if (omDatabasenErEndretNylig()) {
-                    Loggekyklop.hent().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Eksporterte alle data som zip-fil");
+                    Loggekyklop.bruk().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Eksporterte alle data som zip-fil");
                     opprettOgLagreBackupSomZipfil();
 
                 } else {
-                    Loggekyklop.hent().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Ingen endringer i databasen.");
+                    Loggekyklop.bruk().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Ingen endringer i databasen.");
                 }
             }
         };
@@ -197,7 +198,7 @@ public class Backupkyklop {
     public Anchor hentBackupLenkeButton(String strApplikasjonsnavn){
         File mappe = hentBackupmappeFile();
         if (mappe==null) {
-            Loggekyklop.hent().loggFEIL("BackupFolder er null, avbryter");
+            Loggekyklop.bruk().loggFEIL("BackupFolder er null, avbryter");
             return null;
         }
 
@@ -205,7 +206,7 @@ public class Backupkyklop {
         try {
             pathString = hentBackupmappeFile().getCanonicalPath() + "/" + opprettFilnavnForBackup(strApplikasjonsnavn);
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL("Fikk ikke hentet backupmappeFile sin canonicalPath, avbryter");
+            Loggekyklop.bruk().loggFEIL("Fikk ikke hentet backupmappeFile sin canonicalPath, avbryter");
 
         }
 
@@ -226,7 +227,7 @@ public class Backupkyklop {
         try {
             pathString = hentBackupmappeFile().getCanonicalPath() + "/" + strFilnavn;
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL("Fikk ikke hentet backupmappeFile sin canonicalPath, avbryter");
+            Loggekyklop.bruk().loggFEIL("Fikk ikke hentet backupmappeFile sin canonicalPath, avbryter");
         }
         File zipFil = new File(pathString);
         return new Anchor(DownloadHandler.forFile(zipFil),"");
@@ -238,7 +239,7 @@ public class Backupkyklop {
         try {
             zipOut = new ZipOutputStream(new FileOutputStream(zipFil));
         } catch (FileNotFoundException e) {
-            Loggekyklop.hent().loggFEIL("Feil ved opprettelse av zip-fil: " + e.getMessage() + ", avbryter");
+            Loggekyklop.bruk().loggFEIL("Feil ved opprettelse av zip-fil: " + e.getMessage() + ", avbryter");
             return;
         }
 
@@ -253,14 +254,14 @@ public class Backupkyklop {
                         zipOut.write(data);
                         zipOut.closeEntry();
                     } catch (IOException e) {
-                        Loggekyklop.hent().loggFEIL("Feil ved opprettelse av zipEntry: " + e.getMessage() + ", går videre");
+                        Loggekyklop.bruk().loggFEIL("Feil ved opprettelse av zipEntry: " + e.getMessage() + ", går videre");
                     }
                 }
             }
         try {
             zipOut.close();
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL("Feil ved lukking og lagring av zipFil: " + e.getMessage() + ".");
+            Loggekyklop.bruk().loggFEIL("Feil ved lukking og lagring av zipFil: " + e.getMessage() + ".");
         }
 
         mainViewMal.oppdaterBackupteksttabell();
@@ -311,7 +312,7 @@ public class Backupkyklop {
         }
         boolean blnDone = file.delete();
         if (!blnDone) {
-            Loggekyklop.hent().loggADVARSEL("Backupfilen " + strFilnavn + " ble ikke slettet likevel.");
+            Loggekyklop.bruk().loggADVARSEL("Backupfilen " + strFilnavn + " ble ikke slettet likevel.");
         }
 
         oppdaterBackupListe();
@@ -345,7 +346,7 @@ public class Backupkyklop {
         CSVImportmester csvImportmester = new CSVImportmester();
         for (int i= 0; i<entitetservicene.size();i++) {
             EntitetserviceAktig<?, ?> entityservice = entitetservicene.get(i);
-            Loggekyklop.hent().loggDEBUG("Importerer rader for " + entityservice.hentEntitetsnavn());
+            Loggekyklop.bruk().loggDEBUG("Importerer rader for " + entityservice.hentEntitetsnavn());
             String filnavnString = opprettFilnavnForEntitetensTekstfilIZipfil(entityservice);
             Path tekstfilPath = Filkyklop.hent().finnPathIMappe(hentUnzipmappeFile().toPath(), filnavnString);
             csvImportmester.importerFraFileTilKjentEntitet(tekstfilPath,entityservice);
@@ -398,7 +399,7 @@ public class Backupkyklop {
             zis.close();
 
         } catch (Exception e) {
-            Loggekyklop.hent().loggADVARSEL("Klarte ikke å unzippe backupfil, avbryter");
+            Loggekyklop.bruk().loggADVARSEL("Klarte ikke å unzippe backupfil, avbryter");
             return false;
         }
 
@@ -499,7 +500,7 @@ public class Backupkyklop {
         System.out.println();
         System.out.println("ENTITETSERVICENE");
         for (EntitetserviceAktig<?, ?> entitetserviceAktig:entitetservicene) {
-            Loggekyklop.hent().loggDEBUG("Entitetservice " + entitetserviceAktig.hentEntitetsnavn());
+            Loggekyklop.bruk().loggDEBUG("Entitetservice " + entitetserviceAktig.hentEntitetsnavn());
         }
     }
 }

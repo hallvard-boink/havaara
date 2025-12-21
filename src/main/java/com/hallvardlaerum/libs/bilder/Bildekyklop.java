@@ -1,6 +1,7 @@
 package com.hallvardlaerum.libs.bilder;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.DesimalMester;
 import com.hallvardlaerum.libs.felter.TekstKyklop;
 import com.hallvardlaerum.libs.filerogopplasting.Filkategori;
@@ -46,7 +47,7 @@ public class Bildekyklop {
                     throw new RuntimeException(e);
                 }
             } else {
-                Loggekyklop.hent().loggADVARSEL("Filen finnes ikke");
+                Loggekyklop.bruk().loggADVARSEL("Filen finnes ikke");
                 return "";
             }
         } else {
@@ -111,7 +112,7 @@ public class Bildekyklop {
         try {
             boolean bleSkrevet = ImageIO.write(scaledImage, "jpg",nyForminsketFilFile);
             if (!bleSkrevet) {
-                Loggekyklop.hent().loggADVARSEL("Filen " + nyForminsketFilFile.getName() + " ble ikke skrevet.");
+                Loggekyklop.bruk().loggADVARSEL("Filen " + nyForminsketFilFile.getName() + " ble ikke skrevet.");
             }
 
 

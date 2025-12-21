@@ -17,8 +17,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-import java.text.Normalizer;
-
 public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
         extends VerticalLayout
         implements RedigeringsomraademalAktig<Entitet> {
@@ -107,7 +105,7 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
         }
         Tab tab = tabSheet.getTabAt(tabIndex);
         if (tab == null) {
-            Loggekyklop.hent().loggFEIL("Fant ingen tab med index " + tabIndex + ", avbryter");
+            Loggekyklop.bruk().loggFEIL("Fant ingen tab med index " + tabIndex + ", avbryter");
             return null;
         } else {
             return hentFormLayoutFraTab(tab);
@@ -136,7 +134,7 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
         if (tabContent instanceof FormLayout) {
             return (FormLayout) tabContent;
         } else {
-            Loggekyklop.hent().loggFEIL("Komponenten på øverste nivå for tab " + tab.getLabel() + " er " + tabContent.getClassName() + ", ikke Formlayout");
+            Loggekyklop.bruk().loggFEIL("Komponenten på øverste nivå for tab " + tab.getLabel() + " er " + tabContent.getClassName() + ", ikke Formlayout");
             return null;
         }
 
@@ -153,16 +151,21 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
 
     @Override
     public void leggTilDatofeltTidOpprettetOgRedigert(){
-        leggTilDatofeltTidOpprettetOgRedigert(hovedtabnavnString);
+        leggTilDatofeltTidOpprettetOgRedigert(null);
     }
 
     @Override
     public void leggTilDatofeltTidOpprettetOgRedigert(String tabString){
-        FormLayout formLayout = hentFormLayoutFraTab(tabString);
+        FormLayout formLayout;
+        if (tabString==null)  {
+            formLayout = formLayoutKjerne;
+        } else {
+            formLayout = hentFormLayoutFraTab(tabString);
+        }
 
         opprettetDatoTid = new DateTimePicker("Opprettet dato");
         redigertDatoTid = new DateTimePicker("Redigert dato");
-        leggTilRedigeringsfelter(tabString, opprettetDatoTid, redigertDatoTid);
+        leggTilRedigeringsfelter_faktisk(formLayout, opprettetDatoTid, redigertDatoTid);
 
         binder.bind(opprettetDatoTid, Entitet::getOpprettetDatoTid, Entitet::setOpprettetDatoTid);
         binder.bind(redigertDatoTid, Entitet::getRedigertDatoTid, Entitet::setRedigertDatoTid);
@@ -191,13 +194,13 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
             }
         }
 
-        Loggekyklop.hent().loggFEIL("Komponenten du prøver å finne er ikke lagt til noe sted");
+        Loggekyklop.bruk().loggFEIL("Komponenten du prøver å finne er ikke lagt til noe sted");
         return null;
 
     }
 
     private boolean komponentenFinnesIFormlayout(Component component, FormLayout formLayout) {
-        return formLayout.getChildren().anyMatch(c -> c.equals(component));
+        return formLayout.getChildren().anyMatch(c -> c.getId().equals(component.getId()));
     }
 
 
@@ -230,8 +233,8 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
 
 
     private <C extends Component> C leggTilRedigeringsfelt_faktisk(FormLayout formLayout, C komponent)  {
-        this.formLayoutKjerne = formLayout;
-        this.formLayoutKjerne.add(komponent);
+        formLayout.addFormRow(komponent);
+
         if (komponent instanceof DatePicker) {
             Datokyklop.hent().fiksDatoformat((DatePicker) komponent);
         } else if (komponent instanceof  DateTimePicker) {
@@ -254,7 +257,7 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
 
         FormLayout formLayout = hentFormLayoutFraTab(tabIndex);
         if (formLayout==null) {
-            Loggekyklop.hent().loggFEIL("Fant ingen tab på tabIndex " + tabIndex + ", avbryter");
+            Loggekyklop.bruk().loggFEIL("Fant ingen tab på tabIndex " + tabIndex + ", avbryter");
             return null;
         } else {
             return leggTilRedigeringsfelt_faktisk(formLayout, komponent);
@@ -315,29 +318,55 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
     @Override
     public Binder<Entitet> hentBinder() {
         if (binder==null) {
-            binder = new Binder<>();
+            Loggekyklop.bruk().loggFEIL("Binder er tom, men skulle vært initiert");
         }
         return binder;
     }
 
+    public void settBinder(Binder<Entitet> binder) {
+        this.binder = binder;
+    }
+
+    @Deprecated
     @Override
     public Entitet getEntitet() {
         return entitet;
     }
 
+    @Deprecated
     @Override
     public void setEntitet(Entitet entitet) {
         this.entitet = entitet;
     }
 
+    @Override
+    public Entitet hentEntitet(){
+        return entitet;
+    }
 
+    @Override
+    public void settEntitet(Entitet entitet) {
+        this.entitet = entitet;
+    }
+
+
+    @Override
+    public void settFokusKomponent(Component fokusComponent){
+        if (fokusComponent instanceof Focusable<?>) {
+            this.fokusComponent = fokusComponent;
+        } else {
+            Loggekyklop.bruk().loggFEIL("Du kan ikke sette komponenter av klassen " + fokusComponent.getClass().getName() + " som fokusComponent, fordi de støtter ikke focus()");
+        }
+    }
+
+    @Deprecated
     @Override
     public void setFokusComponent(Component fokusComponent) {
         if (fokusComponent instanceof Focusable<?>) {
             this.fokusComponent = fokusComponent;
-            fokusComponent.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.TextColor.PRIMARY);
+            //fokusComponent.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.TextColor.PRIMARY);
         } else {
-            Loggekyklop.hent().loggFEIL("Du kan ikke sette komponenter av klassen " + fokusComponent.getClass().getName() + " som fokusComponent, fordi de støtter ikke focus()");
+            Loggekyklop.bruk().loggFEIL("Du kan ikke sette komponenter av klassen " + fokusComponent.getClass().getName() + " som fokusComponent, fordi de støtter ikke focus()");
         }
     }
 

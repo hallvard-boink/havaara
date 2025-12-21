@@ -5,9 +5,9 @@ import com.hallvardlaerum.libs.database.EntitetMedBarnAktig;
 import com.hallvardlaerum.libs.database.EntitetMedForelderAktig;
 import com.hallvardlaerum.libs.database.EntitetserviceAktig;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.Rekkefolgekyklop;
 import com.hallvardlaerum.libs.filerogopplasting.Filkategori;
-import com.hallvardlaerum.libs.filerogopplasting.FilopplastingsEgnet;
 import com.hallvardlaerum.libs.ui.RedigeringsomraadeAktig;
 import com.hallvardlaerum.libs.ui.RedigeringsomraadeMal;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -65,7 +65,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
             if (this.erFrittstaaende) {
                 visForelderCombobox();
             }
-            Loggekyklop.hent().loggINFO("Bilderedigeringsomraade ble initiert");
+            Loggekyklop.bruk().loggINFO("Bilderedigeringsomraade ble initiert");
         }
     }
 
@@ -103,7 +103,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
     @Override
     public void instansOppdaterEkstraRedigeringsfelter() {
         if (bildeOpplastingsKomponent==null) {
-            Loggekyklop.hent().loggFEIL("BildeopplastingsKomponent er null. iiik! Noe er feil med initieringen av komponenter.");
+            Loggekyklop.bruk().loggFEIL("BildeopplastingsKomponent er null. iiik! Noe er feil med initieringen av komponenter.");
             return;
         }
 
@@ -194,7 +194,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
             //EntitetMedBarnAktig<Bildeklasse> forelder = (EntitetMedBarnAktig<Bildeklasse>) ((EntitetMedForelderAktig) getEntitet()).getForelder();
             return forelder.hentBarn();
         } else {
-            Loggekyklop.hent().loggFEIL("Entiteten er ikke av type EntitetMedForelderAktig, returnerer tom liste");
+            Loggekyklop.bruk().loggFEIL("Entiteten er ikke av type EntitetMedForelderAktig, returnerer tom liste");
             return new ArrayList<>();
         }
 

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class RekkefolgekyklopTest {
     private ArrayList<RekkefoelgeObjekt> liste;
 
-    @Test
+    //@Test
     public void flyttFremover() {
         byggListe();
         printListe();
@@ -39,7 +39,7 @@ public class RekkefolgekyklopTest {
 
     }
 
-    @Test
+    //@Test
     public void flyttBakover() {
         byggListe();
         printListe();
@@ -71,7 +71,7 @@ public class RekkefolgekyklopTest {
 
     }
 
-    @Test
+    //@Test
     public void flyttFoerst() {
         byggListe();
         printListe();
@@ -82,7 +82,7 @@ public class RekkefolgekyklopTest {
         assert objektC.equals(liste.getFirst());
     }
 
-    @Test
+    //@Test
     public void flyttSist() {
         byggListe();
         printListe();

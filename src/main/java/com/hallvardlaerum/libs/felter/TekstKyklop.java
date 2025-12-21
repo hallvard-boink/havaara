@@ -1,8 +1,10 @@
 package com.hallvardlaerum.libs.felter;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public class TekstKyklop {
     private static TekstKyklop tekstKyklop;
@@ -49,9 +51,17 @@ public class TekstKyklop {
         return sb.toString();
     }
 
+    public String fjernFoersteDelAvStrengMedDelimiter(String tekst, String delimiter) {
+        return fjernDelAvStrengMedDelimiter(tekst,delimiter,true);
+    }
+
     public String fjernSisteDelAvStrengMedDelimiter(String tekst, String delimiter) {
+        return fjernDelAvStrengMedDelimiter(tekst,delimiter,false);
+    }
+
+    public String fjernDelAvStrengMedDelimiter(String tekst, String delimiter, boolean fjernFoerste) {
         if (!delimiter.contains("\\")){
-            Loggekyklop.hent().loggFEIL("Delimiter uten escape (\\\\) først");
+            Loggekyklop.bruk().loggFEIL("Delimiter uten escape (\\\\) først");
             return tekst;
         }
 
@@ -62,7 +72,18 @@ public class TekstKyklop {
 
         String delimiterUtenEscape = fjernEscapecharacterFraStreng(delimiter);
         StringBuilder sb = new StringBuilder();
-        for (int i = 0;i<deler.length-1;i++) {
+        int startInt;
+        int sluttInt;
+
+        if (fjernFoerste) {
+            startInt=1;
+            sluttInt = deler.length;
+        } else {
+            startInt=0;
+            sluttInt = deler.length-1;
+        }
+
+        for (int i = startInt; i<sluttInt; i++) {
             if (i>0) {
                 sb.append(delimiterUtenEscape);
             }
@@ -100,7 +121,7 @@ public class TekstKyklop {
         if (strDelimiter.isEmpty() || strDelimiter.isBlank()) { strDelimiter = "."; }
         if (antallDeler == null || antallDeler == 0) { antallDeler = 1;}
 
-        String regexDel = "\\" + strDelimiter;
+        String regexDel = Pattern.quote(strDelimiter);
         String[] deler = strRekke.split(regexDel);
         if (antallDeler > deler.length) {
             antallDeler = deler.length;
@@ -119,8 +140,6 @@ public class TekstKyklop {
         String strUtenSoekestreng = strTekst.replaceAll(strDetSomSkalTelles, "");
         return strTekst.length()- strUtenSoekestreng.length();
     }
-
-
 
 
     /**

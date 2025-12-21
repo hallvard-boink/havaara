@@ -1,6 +1,7 @@
 package com.hallvardlaerum.libs.filerogopplasting;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +32,7 @@ public interface TekstfilformatKonverteringsMesterAktig {
             String konvertertString = Files.readString(lesPath, inputCharset);
             return fjernAlleLineBreaksIStrenger(konvertertString);
         } catch (IOException e) {
-            Loggekyklop.hent().loggFEIL("Klarte ikke å lese filen med stien " + lesPath.toString());
+            Loggekyklop.bruk().loggFEIL("Klarte ikke å lese filen med stien " + lesPath.toString());
             return null;
         }
 

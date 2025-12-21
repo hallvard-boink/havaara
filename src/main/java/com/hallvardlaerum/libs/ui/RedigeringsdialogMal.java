@@ -3,10 +3,10 @@ package com.hallvardlaerum.libs.ui;
 import com.hallvardlaerum.libs.database.EntitetAktig;
 import com.hallvardlaerum.libs.database.EntitetserviceAktig;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
+import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.data.binder.Binder;
 
 public class RedigeringsdialogMal<Entitet extends EntitetAktig> extends Dialog implements RedigeringsdialogAktig<Entitet> {
     EntitetserviceAktig<Entitet,?> entitetservice;
@@ -20,7 +20,7 @@ public class RedigeringsdialogMal<Entitet extends EntitetAktig> extends Dialog i
         if (entitetservice.hentRedigeringsomraadeAktig() instanceof RedigeringsomraadeMal<?>) {
             redigeringsomraade = (RedigeringsomraadeMal)entitetservice.hentRedigeringsomraadeAktig();
         } else {
-            Loggekyklop.hent().loggFEIL("Redigeringsområdet var ikke av type redigeringsomraademal<Entitet>. Merkelig! Ingen dialogfunksjonalitet, altså.");
+            Loggekyklop.bruk().loggFEIL("Redigeringsområdet var ikke av type redigeringsomraademal<Entitet>. Merkelig! Ingen dialogfunksjonalitet, altså.");
             return;
         }
 
