@@ -12,6 +12,9 @@ public class HavaaraVersjonskyklop extends Versjonskyklopmal{
 
     @Override
     public void byggOppVersjoner() {
+        super.leggTilVersjon("1.8.1","2025-12-21","Smårydding",
+                "Ga flere metoder helt norske navn (f.eks. settEntitet), og la til klasser for lettere håndtering av layout (f.eks. HallvardsGrid og Pyntekyklop). " +
+                        "Fikset oppdateringsfeil på generisk dialog.");
 
         super.leggTilVersjon("1.8.0","2025-12-06","Tomme constructorer for bean injection",
                 "Fjernet innhold i alle constructorer som skal injiseres, slik at Allvitekyklop ikke kræsjer, og fikk RedigerEntityDialog til å virke.");

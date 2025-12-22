@@ -6,9 +6,9 @@ import com.vaadin.flow.component.grid.HeaderRow;
 import java.util.List;
 
 /**
- * FastradGrid = Grid med rader som er opprett med setItems(). Kan også kalles småGrid?
- * FleksibelradGrid = Grid med rader som har DataProvider og henter inn rader etter behov. Kan også kalles storGrid?
+ * Denne bør erstattes med HallvardsGrid
  */
+@Deprecated
 public class Gridkyklop {
     private static Gridkyklop gridkyklop;
 
@@ -24,7 +24,7 @@ public class Gridkyklop {
     }
 
 
-    @Deprecated
+
     public HeaderRow alleRaderTilpassKolonnerOgOpprettFilteradIGrid(Grid<?> grid){
         HeaderRow headerRow = tilpassKolonnerOgOpprettFilterrad(grid);
         grid.setMultiSort(true, Grid.MultiSortPriority.APPEND);

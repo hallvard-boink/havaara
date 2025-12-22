@@ -3,7 +3,9 @@ package com.hallvardlaerum.libs.ui;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-
+/**
+ * Litt usikker på om jeg skal bruke denne eller legge funksjonaliteten i maler for andre klasser
+ */
 public class PynteKyklop {
     private static PynteKyklop pynteKyklop;
 

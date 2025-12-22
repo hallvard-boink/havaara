@@ -13,7 +13,7 @@
     <groupId>com.hallvardlaerum.libs</groupId>
     <artifactId>havaara</artifactId>
     <name>Havaara - Hallvards Vaadin-rammeverk</name>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.8-SNAPSHOT</version>
     <description>For lynrask utvikling av lekre, datadrevne java-applikasjoner. "Convention over Configuration"</description>
     <packaging>jar</packaging>
 

@@ -48,6 +48,8 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
 
         this.setResizable(true);
         this.setDraggable(true);
+        this.setWidth("90vw");
+        this.setHeight("90vh");
     }
 
     public void settStoerrelse(Integer hoeydeiPixler, Integer breddeIPixler) {
@@ -55,10 +57,13 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
         this.setHeight(hoeydeiPixler + "px");
     }
 
+    //TODO: Denne er hentet fra MasterDetailViewMal/OppdaterRedigeringsomraade - bør flyttes til felles sted, f.eks. redigeringsområdet?
     public void vis(BarneKlasse entitet){
         barnRedigeringsomraade.aktiver(true);
-        barnRedigeringsomraade.setEntitet(entitet);
+        barnRedigeringsomraade.settEntitet(entitet);
         barnRedigeringsomraade.lesBean();
+        ((RedigeringsomraadeAktig)barnRedigeringsomraade).instansOppdaterEkstraRedigeringsfelter();
+        barnRedigeringsomraade.aktiver(true);
         barnRedigeringsomraade.fokuser();
         open();
 

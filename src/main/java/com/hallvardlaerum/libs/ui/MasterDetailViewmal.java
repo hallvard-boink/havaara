@@ -128,7 +128,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
                               RedigeringsomraadeAktig<Entitet> redigeringsomraade,
                               SplitLayout.Orientation orientering,
                               Double splitPositionDouble) {
-        opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL, 50D, GridInnholdsTypeEnum.ALLERADER);
+        opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL, splitPositionDouble, GridInnholdsTypeEnum.ALLERADER);
     }
 
     @Override
