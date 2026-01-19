@@ -53,18 +53,17 @@ public class Filkyklop {
     /**
      * Hensikten med denne prosedyren er å gjøre det mulig å laste ned en fil fra server til klientmaskinen.
      * Fremgangsmåten er litt hackete.
-     *
+     * <br/>
      * Prosedyrene skaper et usynlig HTML-Anchor som inneholder en synlig Button.
      * Anchor bruker en tekstlig referanse til en fil, som gjenopprettes når eksportfilen faktisk foreligger på server
      * Det betyr at banen og navnet på filen (filnavnString) må være lik i anchor og i prosedyren som oppretter innholdet,
      * f.eks. ExcelEksportkyklop.hent().eksporterArrayListAvEntiteterSomXLS
-     *
+     * <br/>
      * @param filnavnString Filnavnet, med ekstensjon (.xls, for eksempel)
      * @param tekstPaaButtonString Teksten som skal vises i knappen
      * @param clicklistener Lambdauttrykk på formen buttonclickevent -> metode()
      * @return
      */
-
     public Anchor hentNedlastingsButtonAnchor(String filnavnString, String tekstPaaButtonString, ComponentEventListener<ClickEvent<Button>> clicklistener) {
         return hentNedlastingsButtonAnchor(filnavnString,StandardmappeEnum.TEMP,tekstPaaButtonString,clicklistener);
     }

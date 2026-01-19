@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -93,7 +94,7 @@ public abstract class EntitetserviceMal<Entitet extends EntitetAktig,
     }
 
     @Override
-    public void lagreAlle(ArrayList<Entitet> alEntities) {
+    public void lagreAlle(List<Entitet> alEntities) {
         repository.saveAllAndFlush(alEntities);
     }
 
