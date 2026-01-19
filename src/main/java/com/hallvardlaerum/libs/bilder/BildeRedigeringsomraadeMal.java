@@ -143,7 +143,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
         hoeydeIPixlerIntegerField = super.leggTilRedigeringsfelt(new IntegerField("Høyde (px)"));
         breddeIPixlerIntegerField = super.leggTilRedigeringsfelt(new IntegerField("Bredde (px)"));
 
-        super.setFokusComponent(tittelTextField);
+        super.settFokusKomponent(tittelTextField);
     }
 
     private void oppdaterAndreHovedbildeCheckboxer() {
