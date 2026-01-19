@@ -2,8 +2,6 @@ package com.hallvardlaerum.libs.ui;
 
 import com.hallvardlaerum.libs.database.EntitetAktig;
 import com.hallvardlaerum.libs.database.EntitetserviceAktig;
-import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
-import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -13,36 +11,75 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlasse extends EntitetAktig> extends Dialog{
 
-    private RedigeringsomraadeMal<BarneKlasse> barnRedigeringsomraade;
-    private RedigeringsomraadeMal<ForelderKlasse> forelderRedigeringsomraade;
-    private EntitetserviceAktig<BarneKlasse,?> barnEntitetservice;
-    private EntitetserviceAktig<ForelderKlasse,?> forelderEntitetservice;
+    private RedigeringsomraadeMal<Entitet> redigeringsomraade;
+    private RedigeringsomraadeMal<OmsluttendeEntitet> omsluttendeRedigeringsomraade;
+    private EntitetserviceAktig<Entitet,?> entitetservice;
+    private EntitetserviceAktig<OmsluttendeEntitet,?> omsluttendeEntitetservice;
+    private Span beskrivelseSpan;
+    private RedigerEntitetDialogEgnet<Entitet> redigerEntitetDialogEgnet;
 
-
-    public RedigerEntitetDialog (EntitetserviceAktig<BarneKlasse,?> barnEntitetservice,
-                                 EntitetserviceAktig<ForelderKlasse,?> forelderEntitetservice,
+    /**
+     * Initiering uten redigerEntitetDialogEgnet
+     * @param entitetservice Service til entiteten som skal redigeres
+     * @param omsluttendeEntitetservice Service som brukes i redigeringsområdet dialogen starter fra. Brukes til oppdatering av forelder
+     * @param strTittel Tittel på dialogboksen
+     * @param strForklaring Forklaring i dialogbosken
+     * @param redigeringsomraade Redigeringsområdet som skal vises i dialogen
+     * @param omsluttendeRedigeringsomraade Redigeringsområdet som dialogen starter fra. Brukes til refresh
+     */
+    public RedigerEntitetDialog (EntitetserviceAktig<Entitet,?> entitetservice,
+                                 EntitetserviceAktig<OmsluttendeEntitet,?> omsluttendeEntitetservice,
                                  String strTittel,
                                  String strForklaring,
-                                 RedigeringsomraadeMal<BarneKlasse> redigeringsomraade) {
-        this.barnEntitetservice = barnEntitetservice;
-        barnRedigeringsomraade = redigeringsomraade;
+                                 RedigeringsomraadeMal<Entitet> redigeringsomraade,
+                                 RedigeringsomraadeMal<OmsluttendeEntitet> omsluttendeRedigeringsomraade){
+
+        inititer(entitetservice,omsluttendeEntitetservice,strTittel,strForklaring,redigeringsomraade,omsluttendeRedigeringsomraade,null);
+    }
+
+    /**
+     * Initiering med redigerEntitetDialogEgnet
+     * @param entitetservice Service til entiteten som skal redigeres
+     * @param omsluttendeEntitetservice Service som brukes i redigeringsområdet dialogen starter fra. Brukes til oppdatering av forelder
+     * @param strTittel Tittel på dialogboksen
+     * @param strForklaring Forklaring i dialogbosken
+     * @param redigeringsomraade Redigeringsområdet som skal vises i dialogen
+     * @param omsluttendeRedigeringsomraade Redigeringsområdet som dialogen starter fra. Brukes til refresh
+     * @param redigerEntitetDialogEgnet et objekt som har implementert denne interfacen, for eksempel omsluttende redigeringsområde. Brukes til å kjøre oppdaterEtterLagring()
+     */
+    public RedigerEntitetDialog (EntitetserviceAktig<Entitet,?> entitetservice,
+                                 EntitetserviceAktig<OmsluttendeEntitet,?> omsluttendeEntitetservice,
+                                 String strTittel,
+                                 String strForklaring,
+                                 RedigeringsomraadeMal<Entitet> redigeringsomraade,
+                                 RedigeringsomraadeMal<OmsluttendeEntitet> omsluttendeRedigeringsomraade,
+                                 RedigerEntitetDialogEgnet<Entitet> redigerEntitetDialogEgnet) {
+        inititer(entitetservice,omsluttendeEntitetservice,strTittel,strForklaring,redigeringsomraade,omsluttendeRedigeringsomraade,redigerEntitetDialogEgnet);
+    }
 
 
-        this.forelderEntitetservice = forelderEntitetservice;
-        if (forelderEntitetservice.hentRedigeringsomraadeAktig() instanceof RedigeringsomraadeMal<?>) {
-            this.forelderRedigeringsomraade = (RedigeringsomraadeMal<ForelderKlasse>) forelderEntitetservice.hentRedigeringsomraadeAktig();
-        } else {
-            Loggekyklop.bruk().loggFEIL("Foreldereredigeringsområdet bruker ikke RedigeringsomraadeMal, avbryter");
-            return;
-        }
+    private void inititer(EntitetserviceAktig<Entitet,?> entitetservice,
+                          EntitetserviceAktig<OmsluttendeEntitet,?> omsluttendeEntitetservice,
+                          String strTittel,
+                          String strForklaring,
+                          RedigeringsomraadeMal<Entitet> redigeringsomraade,
+                          RedigeringsomraadeMal<OmsluttendeEntitet> omsluttendeRedigeringsomraade,
+                          RedigerEntitetDialogEgnet<Entitet> redigerEntitetDialogEgnet) {
+        this.entitetservice = entitetservice;
+        this.redigeringsomraade = redigeringsomraade;
+        this.redigeringsomraade.setSizeFull();
+
+        this.omsluttendeEntitetservice = omsluttendeEntitetservice;
+        this.omsluttendeRedigeringsomraade = omsluttendeRedigeringsomraade;
+        this.redigerEntitetDialogEgnet = redigerEntitetDialogEgnet;
 
         VerticalLayout verticalLayout = new VerticalLayout();
         this.add(verticalLayout);
 
         this.setHeaderTitle(strTittel);
-        Span forklaringSpan = new Span(strForklaring);
-        verticalLayout.add(forklaringSpan);
-        verticalLayout.add(barnRedigeringsomraade);
+        beskrivelseSpan = new Span(strForklaring);
+        verticalLayout.add(beskrivelseSpan);
+        verticalLayout.add(this.redigeringsomraade);
         verticalLayout.setSizeFull();
         verticalLayout.add(byggKnappeRad());
 
@@ -57,16 +94,27 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
         this.setHeight(hoeydeiPixler + "px");
     }
 
-    //TODO: Denne er hentet fra MasterDetailViewMal/OppdaterRedigeringsomraade - bør flyttes til felles sted, f.eks. redigeringsområdet?
-    public void vis(BarneKlasse entitet){
-        barnRedigeringsomraade.aktiver(true);
-        barnRedigeringsomraade.settEntitet(entitet);
-        barnRedigeringsomraade.lesBean();
-        ((RedigeringsomraadeAktig)barnRedigeringsomraade).instansOppdaterEkstraRedigeringsfelter();
-        barnRedigeringsomraade.aktiver(true);
-        barnRedigeringsomraade.fokuser();
+
+    public void vis(Entitet entitet, String tittelString, String beskrivelseString){
+        redigeringsomraade.aktiver(true);
+        redigeringsomraade.settEntitet(entitet);
+        redigeringsomraade.lesBean();
+        ((RedigeringsomraadeAktig<Entitet>) redigeringsomraade).instansOppdaterEkstraRedigeringsfelter();
+
+        if (tittelString!=null && !tittelString.isEmpty()) {
+            setHeaderTitle(tittelString);
+        }
+        if (beskrivelseString!=null && !beskrivelseString.isEmpty()) {
+            beskrivelseSpan.setText(beskrivelseString);
+        }
+        redigeringsomraade.aktiver(true);
+        redigeringsomraade.fokuser();
         open();
 
+    }
+
+    public void vis(Entitet entitet) {
+        vis(entitet,null,null);
     }
 
     private HorizontalLayout byggKnappeRad(){
@@ -77,7 +125,7 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
         lagreButton.addClickListener(e -> lagreEntitet());
 
         Button avbrytButton = new Button("Avbryt");
-        avbrytButton.addClickListener(e -> {this.close();});
+        avbrytButton.addClickListener(e -> this.close());
 
         knapperadHorizontalLayout.add(lagreButton, avbrytButton);
         return knapperadHorizontalLayout;
@@ -90,7 +138,10 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
             forelderEntitetservice.flush();
             this.close();
 
-            ((RedigeringsomraadeAktig<ForelderKlasse>)forelderRedigeringsomraade).instansOppdaterEkstraRedigeringsfelter();
+            if (redigerEntitetDialogEgnet!=null) {
+                redigerEntitetDialogEgnet.oppdaterEtterLagring(redigeringsomraade.hentEntitet());
+            }
+            ((RedigeringsomraadeAktig<OmsluttendeEntitet>) omsluttendeRedigeringsomraade).instansOppdaterEkstraRedigeringsfelter();
 
     }
 

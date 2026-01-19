@@ -206,7 +206,7 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
 
     /**
      * Legg til alle komponentene som skal i samme rad samtidig, og bruk setColspan(komponent, intSpan) etterpå.
-     * @param components
+     * @param components komponentene
      */
     public void leggTilRedigeringsfelter(String tabString, Component... components){
         FormLayout formLayout = hentFormLayoutFraTab(tabString);
@@ -392,8 +392,10 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
             }
         }
 
-        delAvView.hentLagreButton().setEnabled(blnAktiver);
-        delAvView.hentSlettButton().setEnabled(blnAktiver);
+        if (delAvView!=null) {
+            delAvView.hentLagreButton().setEnabled(blnAktiver);
+            delAvView.hentSlettButton().setEnabled(blnAktiver);
+        }
     }
 
 

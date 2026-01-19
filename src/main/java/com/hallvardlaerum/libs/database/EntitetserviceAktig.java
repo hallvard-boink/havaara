@@ -1,6 +1,5 @@
 package com.hallvardlaerum.libs.database;
 
-import com.hallvardlaerum.libs.ui.RedigeringsomraadeAktig;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -8,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -32,7 +32,7 @@ public interface EntitetserviceAktig<Entitet extends EntitetAktig,
     ArrayList<Entitet> finnAlle();
     Entitet opprettEntitet();
     void lagre(Entitet entity);
-    void lagreAlle(ArrayList<Entitet> alEntities);
+    void lagreAlle(List<Entitet> alEntities);
     void slett(Entitet entity);
     void flush();
     void opprettTestdata();
@@ -41,14 +41,16 @@ public interface EntitetserviceAktig<Entitet extends EntitetAktig,
 
     /**
      * Entitetservicen konverterer streng hvis den generiske importrutinen ikke klarer det
-     *
+     * @deprecated Bruk heller CSVimportassistent
      * @param entitet
      * @param field
      * @param nyVerdi
      * @return
      */
-
+    @Deprecated
     boolean behandleSpesialfeltVedImport(Object entitet, Field field, String nyVerdi, String importradString);
+
+    @Deprecated
     boolean lagreEkstrafeltTilSenere(EntitetAktig o, String feltnavnString, String verdiString, String importradString);
 
     String hentEntitetsnavn();
