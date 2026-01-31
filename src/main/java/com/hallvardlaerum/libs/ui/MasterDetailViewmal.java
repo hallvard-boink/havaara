@@ -52,6 +52,13 @@ import java.util.UUID;
 public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         Repo extends JpaRepository<Entitet, UUID> & JpaSpecificationExecutor<Entitet> & RepositoryTillegg<Entitet>>
         extends HorizontalLayout implements ViewmalAktig<Entitet, Repo> {
+
+
+// ===========================
+// region 0. Felter og variabler
+// ===========================
+
+
     private EntitetserviceAktig<Entitet, ?> entitetserviceAktig;
     protected Grid<Entitet> soekeGrid;
     protected HorizontalLayout layoutRedigeringsknapper;
@@ -92,6 +99,18 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     public MasterDetailViewmal() {
     }
 
+// endregion
+
+
+
+// ===========================
+// region 2. Valgt entitet, CRUD og oppdatering
+// ===========================
+
+    public Entitet hentEntitet(){
+        return redigeringsomraade.getEntitet();
+    }
+
     @Override
     public ViewCRUDStatusEnum getViewCRUDStatus() {
         return viewCRUDStatus;
@@ -101,6 +120,178 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     public void setViewCRUDStatus(ViewCRUDStatusEnum viewCRUDStatus) {
         this.viewCRUDStatus = viewCRUDStatus;
     }
+
+    @Override
+    public ViewCRUDStatusEnum getCRUDStatus() {
+        return viewCRUDStatus;
+    }
+
+
+    protected void opprettNyEntitet(){
+        viewCRUDStatus = ViewCRUDStatusEnum.NY;
+        Entitet entitet = entitetserviceAktig.opprettEntitet();
+        redigeringsomraade.setEntitet(entitet);
+        instansTilpassNyopprettetEntitet();
+        oppdaterRedigeringsomraade(); // må komme før select(entitet), fordi select fyrer selectionEvent, som setter viewCRUSTATUS.KAN_REDIGERES
+
+        if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
+            soekeGrid.getListDataView().addItem(entitet);
+            soekeGrid.select(entitet); // fyrer SelectionEvent, som oppdaterer innholdet i Redigeringsområdet
+
+        } else {  //LazyDataView
+            //kan ikke legge til direkte, har ikke lyst til å lagre entitet og fyre setFilter heller
+        }
+    }
+
+    public void lagreEntitet(){
+        redigeringsomraade.skrivBean();
+        entitetserviceAktig.lagre(redigeringsomraade.getEntitet());
+        redigeringsomraade.lesBean();  // for å få frem oppdatert endret klokkeslett, men det kommer først senere...
+
+
+        oppdaterSoekeomraadeEtterRedigeringAvEntitet();
+        viewCRUDStatus = ViewCRUDStatusEnum.POST_KAN_REDIGERES;
+        //grid.select(redigeringsomraade.getEntitet()); // fyrer SelectionEvent, som oppdaterer innholdet i Redigeringsområdet
+
+    }
+
+
+    protected void slettEntitet(){
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Slette " + entitetserviceAktig.hentEntitetsnavn().toLowerCase() + "?");
+        dialog.setText("Er du sikker på at du vil slette " + redigeringsomraade.getEntitet().hentBeskrivendeNavn() + "?");
+        dialog.addConfirmListener(e -> {
+            if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
+                soekeGrid.getListDataView().removeItem(redigeringsomraade.getEntitet());
+            }
+            entitetserviceAktig.slett(redigeringsomraade.getEntitet());
+            redigeringsomraade.setEntitet(null);
+            oppdaterRedigeringsomraade();
+            viewCRUDStatus = ViewCRUDStatusEnum.ER_SLETTET;
+            oppdaterSoekeomraadeEtterRedigeringAvEntitet();
+        });
+        dialog.setConfirmText("Ok, kjør på");
+        dialog.setCancelText("Nei, avbryt");
+        dialog.open();
+    }
+
+
+    /**
+     * Brukes etter at entiteter er lagt til fra andre steder, f.eks. Dialogbokser
+     * Erstatt med oppdaterSoekeomraade
+     * @param entitet Den nye entiteten
+     */
+    @Deprecated
+    @Override
+    public void oppdaterSoekeomraade_finnAlle(Entitet entitet){
+        oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(entitet);
+    }
+
+
+    /**
+     * Oppdatere grid når entiteten er oppdatert, f.eks. en av feltene som vises i grid
+     */
+    @Override
+    public void oppdaterSoekeomraadeEtterRedigeringAvEntitet(){
+        if (redigeringsomraade.getEntitet()!=null){
+            if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.ALLE_RADER_SAMTIDIG) {
+                if (viewCRUDStatus.equals(ViewCRUDStatusEnum.POST_KAN_REDIGERES)) {
+                    soekeGrid.getListDataView().refreshItem(redigeringsomraade.getEntitet());
+                } else if (viewCRUDStatus == ViewCRUDStatusEnum.NY) {
+                    soekeGrid.getListDataView().refreshAll();
+                }
+
+            } else if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.PORSJONSVIS){
+                if (viewCRUDStatus.equals(ViewCRUDStatusEnum.POST_KAN_REDIGERES)) {
+                    soekeGrid.getDataProvider().refreshItem(redigeringsomraade.getEntitet());
+                } else if (viewCRUDStatus == ViewCRUDStatusEnum.NY) {
+                    settFilter();
+                    soekeGrid.select(redigeringsomraade.getEntitet());
+                }
+
+            } else {
+                Loggekyklop.bruk().loggADVARSEL("Oppdaterte ikke søkeområdet, fordi grindInnholdsTypeEnum er ikke satt");
+                return;
+            }
+
+        } else if (viewCRUDStatus==ViewCRUDStatusEnum.ER_SLETTET) {
+            oppdaterSoekeomraadeFinnAlleRader();
+        }
+
+        oppdaterAntallRaderNederstIGrid();
+
+    }
+
+    @Override
+    public void oppdaterSoekeomraadeFinnAlleRader(){
+        if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.ALLE_RADER_SAMTIDIG) {
+            soekeGrid.setItems(entitetserviceAktig.finnAlle());
+        } else if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.PORSJONSVIS){
+            settFilter();
+        } else {
+            Loggekyklop.bruk().loggADVARSEL("Oppdaterte ikke søkeområdet, fordi grindInnholdsTypeEnum er ikke satt");
+            return;
+        }
+
+        if (redigeringsomraade.getEntitet()!=null) {
+            soekeGrid.select(redigeringsomraade.getEntitet());
+        }
+
+        oppdaterAntallRaderNederstIGrid();
+    }
+
+
+    /**
+     * Oppdatere grid med helt ny entitet oppdatert, f.eks. en av feltene som vises i grid
+     */
+    @Override
+    public void oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(Entitet entitet) {
+        redigeringsomraade.setEntitet(entitet);
+
+        if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.ALLE_RADER_SAMTIDIG) {
+            soekeGrid.setItems(entitetserviceAktig.finnAlle());
+            soekeGrid.getDataProvider().refreshAll();
+
+        } else if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.PORSJONSVIS) {
+            settFilter();
+        } else {
+            Loggekyklop.bruk().loggADVARSEL("Oppdaterte ikke søkeområdet, fordi grindInnholdsTypeEnum er ikke satt");
+            return;
+        }
+
+        oppdaterAntallRaderNederstIGrid();
+    }
+
+
+
+    private void scrollTilValgtRad(){
+        if (!soekeGrid.isDetailsVisible(redigeringsomraade.getEntitet())){
+            if (soekeGrid.getDataProvider() instanceof GridListDataView<?>) {
+                if (gridInnholdsTypeEnum == GridInnholdsTypeEnum.PORSJONSVIS) {
+                    Loggekyklop.bruk().loggFEIL("Feil innstilling av gridInnholdstype:" + gridInnholdsTypeEnum);
+                }
+                for (int i = 0; i < soekeGrid.getListDataView().getItemCount(); i++) {
+                    if (redigeringsomraade.getEntitet().getUuid().equals(soekeGrid.getListDataView().getItem(i).getUuid())) {
+                        soekeGrid.scrollToIndex(i);
+                    }
+                }
+            } else if (soekeGrid.getDataProvider()!=null) {
+//                int antallRader = entitetserviceAktig.tellAntallMedSpecification();  // VIRKER IKKE ENNÅ
+//                for (int i = 0; i < antallRader; i++) {
+//                    if (redigeringsomraade.getEntitet().getUuid().equals(grid.getDataProvider().)) {
+//                        grid.scrollToIndex(i);
+//                    }
+//                }
+            }
+        }
+    }
+
+// endregion
+
+
+// ===========================
+// region 3. Metoder som kan tilpasses i subklassen
+// ===========================
 
     @Override
     public void instansTilpassNyopprettetEntitet() {
@@ -113,9 +304,13 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         slettButton.setEnabled(aktiverBoolean);
     }
 
-    public Entitet hentEntitet(){
-        return redigeringsomraade.getEntitet();
-    }
+// endregion
+
+
+
+// ===========================
+// region 4. GUI, enkeltkomponenter og Layout
+// ===========================
 
     @Override
     public HorizontalLayout hentKnapperadSoekefelt() {
@@ -192,6 +387,43 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         return soekeGrid;
     }
 
+    @Override
+    public HeaderRow getHeaderRowFilterfelter(){
+        return headerRowFilterfelter;
+    }
+
+    @Override
+    public H2 hentVindutittel() {
+        return vinduTittel;
+    }
+
+    @Override
+    public SubMenu hentVerktoeySubMeny(){
+        return verktoeySubMenu;
+    }
+
+    @Override
+    public Button hentSlettButton() {
+        return slettButton;
+    }
+
+    @Override
+    public Button hentLagreButton() {
+        return lagreButton;
+    }
+
+    @Override
+    public Button hentNyButton() {
+        return nyButton;
+    }
+
+// endregion
+
+
+
+// ===========================
+// region 5. Filter og søk
+// ===========================
 
     @Override
     public <C extends Component> C leggTilFilterfelt(Integer cellIndex, C component, String feltnavn) {
@@ -207,11 +439,6 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
 
         headerRowFilterfelter.getCells().get(cellIndex).setComponent(component);
         return component;
-    }
-
-    @Override
-    public HeaderRow getHeaderRowFilterfelter(){
-        return headerRowFilterfelter;
     }
 
 
@@ -261,11 +488,110 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         }
     }
 
+
+    /**
+     * Denne aktiverer at angitte søkmetode kjøres hver gang en av filterfeltene er endret
+     */
+    @Override
+    public void initierCallbackDataProviderIGrid (
+            @NotNull com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback<Entitet, String> fetchCallback,
+            @NotNull com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback<Entitet, String> countCallback
+    ){
+        final CallbackDataProvider<Entitet, String> dataProvider = DataProvider.fromFilteringCallbacks(fetchCallback, countCallback);
+        gridInnholdsTypeEnum = GridInnholdsTypeEnum.PORSJONSVIS;
+        filterProvider = dataProvider.withConfigurableFilter();
+        soekeGrid.setItems(filterProvider);
+        settFilter();
+    }
+
+    public void brukFiltreIDataprovider(ArrayList<SearchCriteria> filtre) {
+        brukFiltreIDataprovider(filtre, EntityFilterSpecification.OperatorEnum.AND);
+    }
+
+    public void brukFiltreIDataprovider(ArrayList<SearchCriteria> filtre, EntityFilterSpecification.OperatorEnum operatorEnum) {
+        entitetserviceAktig.setEntityFilterSpecification(new EntityFilterSpecification<>(filtre, operatorEnum));
+        filterProvider.setFilter(""); // for å applisere filteret. Det finnes antagelig mer elegante måter å gjøre det på
+        if (this.soekeGrid.getDataProvider() instanceof ListDataView) {
+            this.soekeGrid.getListDataView().refreshAll();
+        } else {
+            this.soekeGrid.getDataProvider().refreshAll();
+        }
+        oppdaterAntallRaderNederstIGrid();
+    }
+
+    @Override
+    public void oppdaterAntallRaderNederstIGrid(){
+        Grid.Column<Entitet> column = soekeGrid.getColumns().getFirst();
+        if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.ALLE_RADER_SAMTIDIG) {
+            column.setFooter("Antall: " + soekeGrid.getListDataView().getItemCount());
+
+        } else if (gridInnholdsTypeEnum==GridInnholdsTypeEnum.PORSJONSVIS){
+            int antallRader = entitetserviceAktig.tellAntallMedSpecification();
+            column.setFooter("Antall: " + antallRader);
+
+        } else {
+            Loggekyklop.bruk().loggADVARSEL("gridInnholdstypeEnum er ikke satt riktig:" + gridInnholdsTypeEnum);
+        }
+    }
+
+
+// endregion
+
+
+
+// ===========================
+// region 6. Opprett Redigeringsområde
+// ===========================
+
     @Override
     public RedigeringsomraadeAktig<Entitet> hentRedigeringsomraadeAktig(){
         return redigeringsomraade;
     }
 
+
+    protected VerticalLayout opprettRedigeringsomraadeMedKnapper(){
+        VerticalLayout verticalLayout = new VerticalLayout();
+        layoutRedigeringsknapper = new HorizontalLayout();
+        opprettRedigeringsknapper();
+
+
+        redigeringsomraadeSomVerticalLayout.setSizeFull();
+        verticalLayout.add(layoutRedigeringsknapper,redigeringsomraadeSomVerticalLayout);
+
+
+        verticalLayout.setSizeFull();
+        return verticalLayout;
+    }
+
+
+
+    protected void opprettRedigeringsknapper(){
+
+        nyButton = new Button("Ny");
+        nyButton.addClickListener(e -> opprettNyEntitet());
+        nyButton.addClickShortcut(Key.KEY_N, KeyModifier.CONTROL, KeyModifier.SHIFT);
+        nyButton.setTooltipText("SHIFT-CTRL-N");
+
+        lagreButton = new Button("Lagre");
+        lagreButton.addClickShortcut(Key.KEY_L, KeyModifier.CONTROL, KeyModifier.SHIFT);
+        lagreButton.addClickListener(e -> lagreEntitet());
+        lagreButton.addClickShortcut(Key.KEY_L, KeyModifier.CONTROL, KeyModifier.SHIFT);
+        lagreButton.setTooltipText("SHIFT-CTRL-L");
+        lagreButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        slettButton = new Button("Slett");
+        slettButton.addClickListener(e -> slettEntitet());
+
+        layoutRedigeringsknapper.addToEnd(nyButton, lagreButton, slettButton);
+    }
+
+// endregion
+
+
+
+// ===========================
+// region 7. Opprett Søkeområde
+// ===========================
 
     protected VerticalLayout opprettSoekeomraade(){
         opprettSoekeomraade_leggTilTittel();
@@ -369,118 +695,6 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         layoutSoekeknapper.add(button);
     }
 
-    private VerticalLayout opprettRedigeringsomraadeMedKnapper(){
-        VerticalLayout verticalLayout = new VerticalLayout();
-        layoutRedigeringsknapper = new HorizontalLayout();
-        opprettRedigeringsknapper();
-
-
-        redigeringsomraadeSomVerticalLayout.setSizeFull();
-        verticalLayout.add(layoutRedigeringsknapper,redigeringsomraadeSomVerticalLayout);
-
-
-        verticalLayout.setSizeFull();
-        return verticalLayout;
-    }
-
-
-
-    private void opprettRedigeringsknapper(){
-
-        nyButton = new Button("Ny");
-        nyButton.addClickListener(e -> {
-            opprettNyEntitet();
-        });
-        nyButton.addClickShortcut(Key.KEY_N, KeyModifier.CONTROL, KeyModifier.SHIFT);
-        nyButton.setTooltipText("SHIFT-CTRL-N");
-
-        lagreButton = new Button("Lagre");
-        lagreButton.addClickShortcut(Key.KEY_L, KeyModifier.CONTROL, KeyModifier.SHIFT);
-        lagreButton.addClickListener(e -> {
-            lagreEntitet();
-        });
-        lagreButton.addClickShortcut(Key.KEY_L, KeyModifier.CONTROL, KeyModifier.SHIFT);
-        lagreButton.setTooltipText("SHIFT-CTRL-L");
-        lagreButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        slettButton = new Button("Slett");
-        slettButton.addClickListener(e -> {
-            slettEntitet();
-        });
-
-        layoutRedigeringsknapper.addToEnd(nyButton, lagreButton, slettButton);
-    }
-
-    @Override
-    public Button hentSlettButton() {
-        return slettButton;
-    }
-
-    @Override
-    public Button hentLagreButton() {
-        return lagreButton;
-    }
-
-    @Override
-    public Button hentNyButton() {
-        return nyButton;
-    }
-
-    private void opprettNyEntitet(){
-        viewCRUDStatus = ViewCRUDStatusEnum.NY;
-        Entitet entitet = entitetserviceAktig.opprettEntitet();
-        redigeringsomraade.setEntitet(entitet);
-        instansTilpassNyopprettetEntitet();
-        oppdaterRedigeringsomraade(); // må komme før select(entitet), fordi select fyrer selectionEvent, som setter viewCRUSTATUS.KAN_REDIGERES
-
-        if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
-            soekeGrid.getListDataView().addItem(entitet);
-            soekeGrid.select(entitet); // fyrer SelectionEvent, som oppdaterer innholdet i Redigeringsområdet
-
-        } else {  //LazyDataView
-            //kan ikke legge til direkte, har ikke lyst til å lagre entitet og fyre setFilter heller
-        }
-    }
-
-    public void lagreEntitet(){
-        redigeringsomraade.skrivBean();
-        entitetserviceAktig.lagre(redigeringsomraade.getEntitet());
-        redigeringsomraade.lesBean();  // for å få frem oppdatert endret klokkeslett, men det kommer først senere...
-
-//        Entitet entitetMedOppdatertDatoTid  = entitetserviceAktig.finnEtterUUID(redigeringsomraade.getEntitet().getUuid().toString());
-//        if (entitetMedOppdatertDatoTid !=null) {
-//            redigeringsomraade.getEntitet().setRedigertDatoTid(entitetMedOppdatertDatoTid.getRedigertDatoTid());  //Litt grisete men la gå.
-//            if (redigeringsomraade.getEntitet().getOpprettetDatoTid()==null) {
-//                redigeringsomraade.getEntitet().setOpprettetDatoTid(entitetMedOppdatertDatoTid.getOpprettetDatoTid());
-//            }
-//        }
-
-        oppdaterSoekeomraadeEtterRedigeringAvEntitet();
-        viewCRUDStatus = ViewCRUDStatusEnum.POST_KAN_REDIGERES;
-        //grid.select(redigeringsomraade.getEntitet()); // fyrer SelectionEvent, som oppdaterer innholdet i Redigeringsområdet
-
-    }
-
-
-    private void slettEntitet(){
-        ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Slette " + entitetserviceAktig.hentEntitetsnavn().toLowerCase() + "?");
-        dialog.setText("Er du sikker på at du vil slette " + entitetserviceAktig.hentVisningsnavn(redigeringsomraade.getEntitet()) + "?");
-        dialog.addConfirmListener(e -> {
-            if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
-                soekeGrid.getListDataView().removeItem(redigeringsomraade.getEntitet());
-            }
-            entitetserviceAktig.slett(redigeringsomraade.getEntitet());
-            redigeringsomraade.setEntitet(null);
-            oppdaterRedigeringsomraade();
-            viewCRUDStatus = ViewCRUDStatusEnum.ER_SLETTET;
-            oppdaterSoekeomraadeEtterRedigeringAvEntitet();
-        });
-        dialog.open();
-    }
-
-
-
 
     @Override
     public void oppdaterRedigeringsomraade(){
@@ -502,34 +716,10 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
 
     }
 
+// endregion
 
-    /**
-     * Denne aktiverer at angitte søkmetode kjøres hver gang en av filterfeltene er endret
-     */
-    @Override
-    public void initierCallbackDataProviderIGrid (
-            @NotNull com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback<Entitet, String> fetchCallback,
-            @NotNull com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback<Entitet, String> countCallback
-    ){
-        final CallbackDataProvider<Entitet, String> dataProvider = DataProvider.fromFilteringCallbacks(fetchCallback, countCallback);
-        filterProvider = dataProvider.withConfigurableFilter();
-        soekeGrid.setItems(filterProvider);
-        settFilter();
-    }
 
-    public void brukFiltreIDataprovider(ArrayList<SearchCriteria> filtre) {
-        brukFiltreIDataprovider(filtre, EntityFilterSpecification.OperatorEnum.AND);
-    }
 
-    public void brukFiltreIDataprovider(ArrayList<SearchCriteria> filtre, EntityFilterSpecification.OperatorEnum operatorEnum) {
-        entitetserviceAktig.setEntityFilterSpecification(new EntityFilterSpecification<>(filtre, operatorEnum));
-        filterProvider.setFilter(""); // for å applisere filteret. Det finnes antagelig mer elegante måter å gjøre det på
-        if (this.soekeGrid.getDataProvider() instanceof ListDataView) {
-            this.soekeGrid.getListDataView().refreshAll();
-        } else {
-            this.soekeGrid.getDataProvider().refreshAll();
-        }
-    }
 
 
 

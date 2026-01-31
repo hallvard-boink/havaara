@@ -1,7 +1,6 @@
 package com.hallvardlaerum.libs.felter;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
-import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -22,7 +21,7 @@ public class HelTallMester {
             return null;
         }
 
-        Float desimaltall = null;
+        Float desimaltall;
         try {
             desimaltall = Float.parseFloat(tallString);
             return Math.round(desimaltall);
@@ -40,13 +39,13 @@ public class HelTallMester {
             }
 
 
-            Integer tallv2Integer = null;
+            int tallv2Integer;
             try {
                 tallv2Integer = Integer.parseInt(forkortetString);
                 return tallv2Integer;
 
             } catch (NumberFormatException ex) {
-                Loggekyklop.hent().loggTilFilINFO("Klarte ikke å konvertere strengen " + forkortetString + " fra originalen " + tallString + " til Integer. Fortsetter");
+                Loggekyklop.hent().loggINFO("Klarte ikke å konvertere strengen " + forkortetString + " fra originalen " + tallString + " til Integer. Fortsetter");
                 return null;
             }
 

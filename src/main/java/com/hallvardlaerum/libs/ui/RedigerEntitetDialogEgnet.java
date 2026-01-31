@@ -4,5 +4,5 @@ import com.hallvardlaerum.libs.database.EntitetAktig;
 
 public interface RedigerEntitetDialogEgnet<Entitet extends EntitetAktig>  {
 
-    void oppdaterEtterLagring(Entitet entitet);
+    void oppdaterEtterLagringFraDialog(Entitet entitet);
 }

@@ -1,11 +1,11 @@
 package com.hallvardlaerum.libs.database;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
-import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -72,8 +72,7 @@ public abstract class EntitetserviceMal<Entitet extends EntitetAktig,
 
     @Override
     public int konverterOffsetOgLimitTilPageNumber(int offsetInt, int limitInt) {
-        int pageInt = offsetInt / limitInt;
-        return pageInt;
+        return offsetInt / limitInt;
 
     }
 
@@ -94,6 +93,7 @@ public abstract class EntitetserviceMal<Entitet extends EntitetAktig,
     }
 
     @Override
+    @Transactional
     public void lagreAlle(List<Entitet> alEntities) {
         repository.saveAllAndFlush(alEntities);
     }

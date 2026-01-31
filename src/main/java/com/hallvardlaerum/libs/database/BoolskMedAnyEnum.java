@@ -7,7 +7,7 @@ import java.util.Collections;
  * Denne kan brukes når combobokser skal brukes som filterfelt for boolske felter.
  * Den inkluderer true, false og any
  */
-public enum BoolskMedAnyEnum {
+public enum BoolskMedAnyEnum implements EnumAktig {
 
     TRUE("sann","Verdien er sann evt. true"),
     FALSE("usann","Verdien er usann evt. false"),
@@ -33,6 +33,11 @@ public enum BoolskMedAnyEnum {
         return beskrivelse;
     }
 
+    @Override
+    public String getTittelIImportfil() {
+        return tittel;
+    }
+
     public void setBeskrivelse(String beskrivelse) {
         this.beskrivelse = beskrivelse;
     }
@@ -42,4 +47,5 @@ public enum BoolskMedAnyEnum {
         Collections.addAll(boolskMedAnyEnums, BoolskMedAnyEnum.values());
         return boolskMedAnyEnums;
     }
+
 }

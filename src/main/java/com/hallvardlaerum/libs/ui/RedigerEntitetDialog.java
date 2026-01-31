@@ -140,7 +140,7 @@ public class RedigerEntitetDialog<Entitet extends EntitetAktig, OmsluttendeEntit
             this.close();
 
             if (redigerEntitetDialogEgnet!=null) {
-                redigerEntitetDialogEgnet.oppdaterEtterLagring(redigeringsomraade.hentEntitet());
+                redigerEntitetDialogEgnet.oppdaterEtterLagringFraDialog(redigeringsomraade.hentEntitet());
             }
             ((RedigeringsomraadeAktig<OmsluttendeEntitet>) omsluttendeRedigeringsomraade).instansOppdaterEkstraRedigeringsfelter();
 

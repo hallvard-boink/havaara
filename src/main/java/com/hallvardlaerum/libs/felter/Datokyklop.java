@@ -8,8 +8,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
 import java.util.Locale;
 
 public class Datokyklop {
@@ -26,6 +24,18 @@ public class Datokyklop {
     private final DateTimeFormatter aarDateTimeFormatter;
     private final DateTimeFormatter maanedsnavnAarTimeFormatter;
 
+
+
+    private LocalDate opprettDatoForFrekvens(Integer aar, Integer nr, FrekvensPerAarEnum frekvensPerAarEnum) {
+        LocalDate dato = null;
+        switch (frekvensPerAarEnum) {
+            case EN_GANG -> dato = LocalDate.of(aar, 1, 1);
+            case MAANEDLIG -> dato = LocalDate.of(aar, nr, 1);
+            case HVERT_KVARTAL -> dato = LocalDate.of(aar, ((nr - 1) * 3) + 1, 1);
+            case HVERT_HALVAAR -> dato = LocalDate.of(aar, ((nr - 1) * 6) + 1, 1);
+        }
+        return dato;
+    }
 
     public LocalDate finnFoersteIAaret(LocalDate dato){
         if (dato==null) {

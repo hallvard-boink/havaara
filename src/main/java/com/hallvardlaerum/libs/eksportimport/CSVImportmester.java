@@ -49,6 +49,13 @@ import java.util.UUID;
 
 
 public class CSVImportmester implements CSVImportmesterAktig {
+
+
+    // ===========================
+    // region 0.Variabler
+    // ===========================
+
+
     private final Integer maksAntallEntiteterIApplikasjonen = 100;
     private ArrayList<String> arraylistFeltnavnTilImport;
     private String delimiter = ";";
@@ -59,8 +66,6 @@ public class CSVImportmester implements CSVImportmesterAktig {
     private CSVImportassistentAktig csvImportassistentAktig = null;
     private String lesCharsetString="UTF-8";
 
-
-
     //Dialogboks lastOppFil
     private Dialog importdialog;
     private VerticalLayout verticalLayoutImportdialog;
@@ -70,35 +75,39 @@ public class CSVImportmester implements CSVImportmesterAktig {
     private Button buttonKjoerImport;
     private Button buttonAvbrytImport;
 
+// endregion
+
+
+
+
+// ===================================
+// region 1.Constructors, init og start
+// ====================================
+
 
     public CSVImportmester(CSVImportassistentAktig csvImportassistentAktig) {
         this.csvImportassistentAktig = csvImportassistentAktig;
         opprettDialogboks();
     }
 
+
     public CSVImportmester() {
         opprettDialogboks();
     }
 
-    @Override
-    public CSVImportassistentAktig getCsvImportassistentAktig() {
-        return csvImportassistentAktig;
+
+    /**
+     * Dette er hovedmetoden som starter det hele
+     *
+     * @param entitetserviceAktig
+     */
+    //@Override
+    public void velgImportfilOgKjoerImport(EntitetserviceAktig<?,?> entitetserviceAktig) {
+        this.entitetservice = entitetserviceAktig;
+        importdialog.open();
     }
 
-    @Override
-    public void setCsvImportassistentAktig(CSVImportassistentAktig csvImportassistentAktig) {
-        this.csvImportassistentAktig = csvImportassistentAktig;
-    }
 
-    @Override
-    public String getLesCharsetString() {
-        return lesCharsetString;
-    }
-
-    @Override
-    public void setLesCharsetString(String lesCharsetString) {
-        this.lesCharsetString = lesCharsetString;
-    }
 
     private void opprettDialogboks() {
         importdialog = new Dialog();
@@ -165,19 +174,6 @@ public class CSVImportmester implements CSVImportmesterAktig {
     }
 
 
-    /**
-     * Dette er hovedmetoden som starter det hele
-     *
-     * @param entitetserviceAktig
-     */
-    //@Override
-    public void velgImportfilOgKjoerImport(EntitetserviceAktig<?,?> entitetserviceAktig) {
-        this.entitetservice = entitetserviceAktig;
-        importdialog.open();
-    }
-
-
-
 
     /**
      * Denne brukes av dialogboksen til selve importen
@@ -192,6 +188,7 @@ public class CSVImportmester implements CSVImportmesterAktig {
             Loggekyklop.hent().loggFEIL("ArrayList var null eller tom, avbryter.");
             return false;
         }
+
 
         Loggekyklop.hent().initierLoggfil();
         Loggekyklop.hent().huskStatus();
@@ -208,6 +205,46 @@ public class CSVImportmester implements CSVImportmesterAktig {
         return true;
     }
 
+
+//endregion
+
+
+
+// ===========================
+// region 2.Tilpass importen
+// ===========================
+
+    @Override
+    public CSVImportassistentAktig getCsvImportassistentAktig() {
+        return csvImportassistentAktig;
+    }
+
+    @Override
+    public void setCsvImportassistentAktig(CSVImportassistentAktig csvImportassistentAktig) {
+        this.csvImportassistentAktig = csvImportassistentAktig;
+    }
+
+
+    @Override
+    public String getLesCharsetString() {
+        return lesCharsetString;
+    }
+
+    @Override
+    public void setLesCharsetString(String lesCharsetString) {
+        this.lesCharsetString = lesCharsetString;
+    }
+
+// endregion
+
+
+
+
+// ===========================
+// region 3.Gjennomføre importen
+// ===========================
+
+
     private void importerMedCSVKonverteringsAktig(ArrayList<String> arrayListCSVInnhold) {
         String[] feltnavnene = arrayListCSVInnhold.getFirst().split(delimiter);
         ArrayList<String> feltnavneneArrayList = new ArrayList<>(List.of(feltnavnene));
@@ -218,11 +255,12 @@ public class CSVImportmester implements CSVImportmesterAktig {
 
     }
 
+
     private void standardimporteringavtekst(ArrayList<String> arrayListCSVInnhold){
         oppdaterArrayListFeltnavnTilImport(arrayListCSVInnhold.getFirst()); // Bygg opp liste over felter som skal importeres
 
-        Loggekyklop.hent().loggTilFilINFO("Antall rader i importfil: " + arrayListCSVInnhold.size());
-        Loggekyklop.hent().loggTilFilINFO("Delimiter er '" + delimiter + "'");
+        Loggekyklop.hent().loggINFO("Antall rader i importfil: " + arrayListCSVInnhold.size());
+        Loggekyklop.hent().loggINFO("Delimiter er '" + delimiter + "'");
 
         ArrayList<EntitetAktig> arrayListEntiteter = new ArrayList<>();
         for (int i = 1; i < arrayListCSVInnhold.size(); i++) {
@@ -253,74 +291,18 @@ public class CSVImportmester implements CSVImportmesterAktig {
 
     }
 
-
-    /**
-     * Når Spring Boot eksporterer beans, blir eventuelle fremmednøkler presentert sammen med navnet på klassen.
-     * Denne må fjernes før UUID kan brukes til import.
-     * Det er hensikten med denne prosedyren.
-     * <p>
-     * Eksempel: "Forfatter{id=049e5bc0-65d4-4d31-b038-0607ceff9297}"
-     *
-     * @param raatekst tekst med klassenavn, klammeparentes, 'id=' og uuid
-     * @return bare uuid
-     */
-    public String hentUt_UUID(String raatekst) {
-        // Forfatter{id=049e5bc0-65d4-4d31-b038-0607ceff9297}
-        return hentUt_EntitetsnavnOgUuid(raatekst)[1];
-    }
+// endregion
 
 
-    /**
-     * Denne kan brukes til å finne ut hvilken javabean fremmednøkkelen peker på
-     *
-     * @param raatekst
-     * @return klassenavn
-     */
-    public String hentUt_Entitetsnavn(String raatekst) {
-        return hentUt_EntitetsnavnOgUuid(raatekst)[0];
-    }
 
 
-    /**
-     * Når Spring Boot eksporterer beans, blir eventuelle fremmednøkler presentert sammen med navnet på klassen.
-     * Denne prosedyren henter ut både klassenavn og uuid, og returnerer de som en String[]
-     * <p>
-     * Eksempel: "Forfatter{id=049e5bc0-65d4-4d31-b038-0607ceff9297}"
-     *
-     * @param raatekst tekst med klassenavn, klammeparentes, 'id=' og uuid
-     * @return String[] hvor String[0] er klassenavn og String[1] er uuid
-     */
-    public String[] hentUt_EntitetsnavnOgUuid(String raatekst) {
-        String[] arKomponenter = new String[2];
-        if (raatekst.contains("{id=")) {
-            String[] deler = raatekst.split("\\{id\\=");
-            if (deler.length == 2) {
-                arKomponenter[0] = deler[0];
-                arKomponenter[1] = deler[1].substring(0, deler[1].length() - 1);
-                return arKomponenter;
-            } else {
-                Loggekyklop.hent().loggDEBUG("Noe er feil med splitt");
-                return arKomponenter;
-            }
-        } else {
-            Loggekyklop.hent().loggDEBUG("Fant ikke id i teksten");
-            return arKomponenter;
-        }
 
-    }
 
-    /**
-     * Brukes til å hente ut klassenavn direkte fra csv-filen, slik at det blir mulig å opprett entiteter
-     * med relasjonskoblinger.
-     *
-     * @param strVerdi
-     * @return navnet på klassen
-     */
-    @Override
-    public String hentUtKlassenavn(String strVerdi){
-        String strFoerstedel = TekstKyklop.hent().hentFoersteDelAvStrengMedDelimiter(strVerdi,"@");
-        return TekstKyklop.hent().hentSisteIStrengMedDelimiter(strFoerstedel,".");
-    }
+// ===========================
+// region 4.Behandle hver rad og hvert felt
+// ===========================
+
+
 
     /**
      * Her skjer selve importen.
@@ -339,8 +321,8 @@ public class CSVImportmester implements CSVImportmesterAktig {
             }
         }
         return entitet;
-
     }
+
 
     /**
      * Her blir hvert felt fyllt med data
@@ -375,7 +357,7 @@ public class CSVImportmester implements CSVImportmesterAktig {
             if (entitetservice instanceof EntitetserviceMedForelderAktig<?, ?, ?, ?>) {
                 ((EntitetserviceMedForelderAktig<?, ?, ?, ?>) entitetservice).oppdaterForelderVedImport(entitet, field, (String) nyVerdi);
             } else {
-                Loggekyklop.hent().loggTilFilINFO("Feltet " + field.getName() + " er annotert med @ManyToOne, men entitetservicen implementerer ikke EntitetserviceMedForelderAktig<?,?>. "
+                Loggekyklop.hent().loggINFO("Feltet " + field.getName() + " er annotert med @ManyToOne, men entitetservicen implementerer ikke EntitetserviceMedForelderAktig<?,?>. "
                 + "Importerer ikke feltets innhold.");
             }
             return;
@@ -435,11 +417,18 @@ public class CSVImportmester implements CSVImportmesterAktig {
         Class<? extends Enum> enumClass = field.getType().asSubclass(Enum.class);
 
         Enum[] enumConstants = enumClass.getEnumConstants();
+        if (!(nyVerdi instanceof String)) {
+            return;
+        }
+        String nyVerdiLCString = ((String)nyVerdi).toLowerCase();
 
         // Search through all enum values
         for (Enum<?> enumConstant : enumConstants) {
             EnumAktig enumValue = (EnumAktig) enumConstant;
-            if (nyVerdi.equals(enumValue.getTittel()) || nyVerdi.equals(enumValue.getTittelIImportfil())) {
+            if (nyVerdiLCString.equals(enumValue.getTittel().toLowerCase())
+                    || nyVerdiLCString.equals(enumValue.getTittelIImportfil())
+                    || nyVerdiLCString.equals(enumConstant.toString().toLowerCase()))
+            {
                 try {
                     field.set(entitet, enumConstant);
                 } catch (IllegalAccessException e) {
@@ -458,8 +447,17 @@ public class CSVImportmester implements CSVImportmesterAktig {
         if (nyVerdi==null) {
             return;
         }
+        if (!(nyVerdi instanceof String)) {
+            return;
+        }
+        String uuidString = (String)nyVerdi;
+        if (uuidString.length()<10) {  //er neppe uuid da
+            importerEntitet_oppdaterFelt_loggFeil(entitet, field, nyVerdi);
+            return;
+        }
+
         try {
-            field.set(entitet, UUID.fromString((String) nyVerdi));
+            field.set(entitet, UUID.fromString(uuidString));
         } catch (IllegalAccessException e) {
             importerEntitet_oppdaterFelt_loggFeil(entitet, field, nyVerdi);
         }
@@ -559,7 +557,7 @@ public class CSVImportmester implements CSVImportmesterAktig {
 
         String meldingString = "Kunne ikke sette " + feltnavnString + " til verdien " + nyVerdi
                 + " for entiteten " + entitet.hentBeskrivendeNavn() + "(" + entitet.getClass().getName() + ") Importrad: " + importradString;
-        Loggekyklop.hent().loggTilFilINFO(meldingString);
+        Loggekyklop.hent().loggINFO(meldingString);
 
 //        Loggekyklop.hent().loggFEIL("Kunne ikke sette " + field.getName() + " til verdien " + nyVerdi
 //                + " for entiteten " + entitet.hentBeskrivendeNavn() + "(" + entitet.getClass().getName() + ")");
@@ -597,9 +595,7 @@ public class CSVImportmester implements CSVImportmesterAktig {
             return;
         }
 
-        if (arraylistFeltnavnTilImport==null) {
-            arraylistFeltnavnTilImport = new ArrayList<>();
-        }
+        arraylistFeltnavnTilImport = new ArrayList<>();
 
         // Splitte
         String[] feltnavnene = feltnavnradString.split(delimiter);
@@ -625,7 +621,7 @@ public class CSVImportmester implements CSVImportmesterAktig {
                 }
             }
             if (!funnetBoolean) {
-                Loggekyklop.hent().loggTilFilINFO("Fant ikke feltet med navnet " + feltnavnene[i] + " i entiteten " + entitet.getClass().getSimpleName());
+                Loggekyklop.hent().loggINFO("Fant ikke feltet med navnet " + feltnavnene[i] + " i entiteten " + entitet.getClass().getSimpleName());
                 arraylistFeltnavnTilImport.add(feltnavnene[i]);
             }
         }
@@ -636,9 +632,17 @@ public class CSVImportmester implements CSVImportmesterAktig {
         for (String feltnavn : arraylistFeltnavnTilImport) {
             sb.append(feltnavn).append(" ");
         }
-        Loggekyklop.hent().loggTilFilINFO(sb.toString());
+        Loggekyklop.hent().loggINFO(sb.toString());
 
     }
+
+// endregion
+
+
+
+// ===========================
+// region 9.Hjelpemetoder
+// ===========================
 
 
     @Override
@@ -666,6 +670,77 @@ public class CSVImportmester implements CSVImportmesterAktig {
         return false;
     }
 
+
+    /**
+     * Når Spring Boot eksporterer beans, blir eventuelle fremmednøkler presentert sammen med navnet på klassen.
+     * Denne må fjernes før UUID kan brukes til import.
+     * Det er hensikten med denne prosedyren.
+     * <p>
+     * Eksempel: "Forfatter{id=049e5bc0-65d4-4d31-b038-0607ceff9297}"
+     *
+     * @param raatekst tekst med klassenavn, klammeparentes, 'id=' og uuid
+     * @return bare uuid
+     */
+    public String hentUt_UUID(String raatekst) {
+        // Forfatter{id=049e5bc0-65d4-4d31-b038-0607ceff9297}
+        return hentUt_EntitetsnavnOgUuid(raatekst)[1];
+    }
+
+
+    /**
+     * Denne kan brukes til å finne ut hvilken javabean fremmednøkkelen peker på
+     *
+     * @param raatekst
+     * @return klassenavn
+     */
+    public String hentUt_Entitetsnavn(String raatekst) {
+        return hentUt_EntitetsnavnOgUuid(raatekst)[0];
+    }
+
+
+    /**
+     * Når Spring Boot eksporterer beans, blir eventuelle fremmednøkler presentert sammen med navnet på klassen.
+     * Denne prosedyren henter ut både klassenavn og uuid, og returnerer de som en String[]
+     * <p>
+     * Eksempel: "Forfatter{id=049e5bc0-65d4-4d31-b038-0607ceff9297}"
+     *
+     * @param raatekst tekst med klassenavn, klammeparentes, 'id=' og uuid
+     * @return String[] hvor String[0] er klassenavn og String[1] er uuid
+     */
+    public String[] hentUt_EntitetsnavnOgUuid(String raatekst) {
+        String[] arKomponenter = new String[2];
+        if (raatekst.contains("{id=")) {
+            String[] deler = raatekst.split("\\{id\\=");
+            if (deler.length == 2) {
+                arKomponenter[0] = deler[0];
+                arKomponenter[1] = deler[1].substring(0, deler[1].length() - 1);
+                return arKomponenter;
+            } else {
+                Loggekyklop.hent().loggDEBUG("Noe er feil med splitt");
+                return arKomponenter;
+            }
+        } else {
+            Loggekyklop.hent().loggDEBUG("Fant ikke id i teksten");
+            return arKomponenter;
+        }
+
+    }
+
+    /**
+     * Brukes til å hente ut klassenavn direkte fra csv-filen, slik at det blir mulig å opprett entiteter
+     * med relasjonskoblinger.
+     *
+     * @param strVerdi
+     * @return navnet på klassen
+     */
+    @Override
+    public String hentUtKlassenavn(String strVerdi){
+        String strFoerstedel = TekstKyklop.hent().hentFoersteDelAvStrengMedDelimiter(strVerdi,"@");
+        return TekstKyklop.hent().hentSisteIStrengMedDelimiter(strFoerstedel,".");
+    }
+
+
+    // endregion
 
 
 

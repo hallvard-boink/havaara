@@ -34,29 +34,69 @@ import java.util.ArrayList;
 
 
 public abstract class MainViewmal extends Main implements MainViewAktig{
+
+// ===========================
+// region 0. Felter
+// ===========================
+
+
     private VersjonskyklopAktig versjonskyklop;
     private VerticalLayout bakgrunnLayout;
     private TabSheet detaljerTabsheet;
     private TekstTabell backupsTekstTabell;
     private TekstTabell felterTekstTabell;
+    private HorizontalLayout bannerplassHorizontalLayout;
+
+// endregion
+
+
+
+// ===========================
+// region 1. Constructor og Init
+// ===========================
 
 
     public MainViewmal() {
 
     }
-    
+
+
+// endregion
+
+
+
+
+
+// ===========================
+// region 2. Opprett layout
+// ===========================
+
+
 
     @Override
     public void opprettLayout(VersjonskyklopAktig versjonskyklop){
         addClassName(LumoUtility.Padding.MEDIUM);
         setSizeFull();
         this.versjonskyklop = versjonskyklop;
+
         bakgrunnLayout = new VerticalLayout();
+        bakgrunnLayout.setSizeFull();
         add(bakgrunnLayout);
 
         // Felles del i toppen
-        bakgrunnLayout.add(new H2(versjonskyklop.getApplikasjonsNavnString()));
-        bakgrunnLayout.add(new Div(versjonskyklop.getApplikasjonsBeskrivelseString()));
+        bannerplassHorizontalLayout = new HorizontalLayout();
+        //bannerplassHorizontalLayout.setSizeFull();
+
+        VerticalLayout tittelplassHorizontalLayout = new VerticalLayout();
+        tittelplassHorizontalLayout.add(new H2(versjonskyklop.getApplikasjonsNavnString()));
+        tittelplassHorizontalLayout.add(new Div(versjonskyklop.getApplikasjonsBeskrivelseString()));
+        //tittelplassHorizontalLayout.setSizeFull();
+
+        HorizontalLayout tittelRadHorizontalLayout = new HorizontalLayout();
+        tittelRadHorizontalLayout.setWidthFull();
+        tittelRadHorizontalLayout.add(tittelplassHorizontalLayout,bannerplassHorizontalLayout);
+        bakgrunnLayout.add(tittelRadHorizontalLayout);
+
 
         //Tabs
         detaljerTabsheet = new TabSheet();
@@ -68,18 +108,15 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
         opprettLayout_felterTab();
 
         detaljerTabsheet.setSizeFull();
-        bakgrunnLayout.setSizeFull();
 
     }
 
-    public void opprettLayout(VersjonskyklopAktig versjonskyklop, boolean byggOppMenyenManuelt) {
 
-    }
 
     private HorizontalLayout opprettLayout_knapperad() {
         HorizontalLayout knapperHorizontalLayout = new HorizontalLayout();
         knapperHorizontalLayout.add(Backupkyklop.hent().hentBackupLenkeButton(versjonskyklop.getApplikasjonsNavnString()));
-        knapperHorizontalLayout.add(Backupkyklop.hent().hentStartBakcupDemonButton());
+        knapperHorizontalLayout.add(Backupkyklop.hent().hentStartBackupDemonButton());
         knapperHorizontalLayout.add(Backupkyklop.hent().hentStoppBackupDemonButton());
         knapperHorizontalLayout.add(Backupkyklop.hent().hentBackupBadge());
         return(knapperHorizontalLayout);
@@ -110,9 +147,9 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
     private void opprettLayout_generellTab(){
         VerticalLayout ark = new VerticalLayout();
 
-        ark.add(opprettApplikasjonTekstTabell());
+        ark.add(opprettLayout_generellTab_opprettApplikasjonTekstTabell());
         ark.setSpacing(true);
-        ark.add(opprettEntitetTeksttabell());
+        ark.add(opprettLayout_generellTab_opprettEntitetTeksttabell());
 
         ark.setSizeFull();
         detaljerTabsheet.add("Generelt",ark);
@@ -151,7 +188,7 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
 
 
 
-    private TekstTabell opprettApplikasjonTekstTabell(){
+    private TekstTabell opprettLayout_generellTab_opprettApplikasjonTekstTabell(){
 
         ArrayList<Infobit> infobiter = new ArrayList<>();
         infobiter.add(new Infobit("Versjon:",versjonskyklop.hentSisteVersjonSomStreng()));
@@ -176,42 +213,15 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
         opprettBackupteksttabell_leggTilRestoreButton(grid);
         opprettBackupteksttabell_leggTilSlettButton(grid);
 
-        //oppdaterBackupteksttabell();
-        ArrayList<Infobit> backuper = Backupkyklop.hent().getBackupInfobiter();
+        oppdaterBackupteksttabell();
 
-        if (backuper.isEmpty()) {
-            backupsTekstTabell.leggTilRad("","(ingen backups er kjørt ennå)");
-
-        } else {
-            for (Infobit infobit:backuper) {
-                backupsTekstTabell.leggTilRad(infobit.getTittel(), infobit.getBeskrivelse());
-            }
-
-        }
-        backupsTekstTabell.oppdaterRadene();
 
         setSizeFull();
         return backupsTekstTabell;
     }
 
-    public void oppdaterBackupteksttabell() {
-        opprettBackupsTekstTabell();
-
-//        backupsTekstTabell.toemInnholdIGrid();
-//        ArrayList<Infobit> backuper = Backupkyklop.hent().getBackupInfobiter();
-//
-//        if (backuper.isEmpty()) {
-//            backupsTekstTabell.leggTilRad("","(ingen backups er kjørt ennå)");
-//
-//        } else {
-//            for (Infobit infobit:backuper) {
-//                backupsTekstTabell.leggTilRad(infobit.getTittel(), infobit.getBeskrivelse());
-//            }
-//        }
-//        backupsTekstTabell.oppdaterRadene();
 
 
-    }
 
     private void opprettBackupteksttabell_leggTilSlettButton(Grid<TekstTabell.Rad> grid) {
         // Button: Slett backup på server
@@ -265,7 +275,7 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
     }
 
 
-    private TekstTabell opprettEntitetTeksttabell(){
+    private TekstTabell opprettLayout_generellTab_opprettEntitetTeksttabell(){
         String[] kolonneTitler = {"Navn","Antall poster","Sist endret"};
         TekstTabell tabell = new TekstTabell("Entiteter",kolonneTitler);
 
@@ -293,6 +303,49 @@ public abstract class MainViewmal extends Main implements MainViewAktig{
         tekstTabell.oppdaterRadene();
         return tekstTabell;
     }
+
+// endregion
+
+
+
+
+// ===========================
+// region 4. Oppdatering
+// ===========================
+
+
+    public void oppdaterBackupteksttabell() {
+        backupsTekstTabell.toemInnholdIGrid();
+        ArrayList<Infobit> backuper = Backupkyklop.hent().getBackupInfobiter();
+
+        if (backuper.isEmpty()) {
+            backupsTekstTabell.leggTilRad("","(ingen backups er kjørt ennå)");
+
+        } else {
+            for (Infobit infobit:backuper) {
+                backupsTekstTabell.leggTilRad(infobit.getTittel(), infobit.getBeskrivelse());
+            }
+
+        }
+        backupsTekstTabell.oppdaterRadene();
+    }
+
+// endregion
+
+
+
+
+// ===========================
+// region 5. Hjelpeprosedyrer
+// ===========================
+
+
+
+    public HorizontalLayout hentBannerplassHorizontalLayout(){
+        return bannerplassHorizontalLayout;
+    }
+
+    // endregion
 
 
 }

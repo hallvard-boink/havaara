@@ -111,7 +111,7 @@ public void lesInnFeltnavnogCeller(ArrayList<String> feltnavnCSVArrayList, Strin
     public String hentVerdi(String feltnavn) {
         Integer posInteger = finnPosisjon(feltnavn);
         if (posInteger==null) {
-            Loggekyklop.hent().loggTilFilINFO("Fant ikke '"+ feltnavn +"' i "  + hentFeltnavnCSVString());
+            Loggekyklop.hent().loggINFO("Fant ikke '"+ feltnavn +"' i "  + hentFeltnavnCSVString());
             return "";
         } else {
             if (posInteger>cellerArrayList.size()-1) {

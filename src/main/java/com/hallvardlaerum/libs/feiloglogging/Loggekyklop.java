@@ -74,6 +74,9 @@ public class Loggekyklop implements LoggekyklopAktig{
     }
 
     public void initierLoggfil(){
+        if (bufferedWriter!=null) { //har allerede en fil gående. Skitten løsning, men la gå for nå,
+            return;
+        }
         String filnavnString = "Importlogg_" + Datokyklop.hent().hentDagensDatoTidForFiler() + ".txt";
         File loggFile = Filkyklop.hent().hentElleropprettFil(StandardmappeEnum.LOGS,filnavnString);
         try {
@@ -137,11 +140,6 @@ public class Loggekyklop implements LoggekyklopAktig{
         }
     }
 
-    public void loggTilFilFEIL(String strMelding) {
-        if (nivaa.ordinal() >= Nivaa.FEIL.ordinal()) {
-            printLog(Nivaa.FEIL,strMelding, true);
-        }
-    }
 
     @Override
     public void loggADVARSEL(String strMelding) {
@@ -164,12 +162,6 @@ public class Loggekyklop implements LoggekyklopAktig{
         }
     }
 
-    public void loggTilFilDEBUG(String strMelding) {
-        if (nivaa.ordinal() >= Nivaa.DEBUG.ordinal()) {
-            printLog(Nivaa.DEBUG,strMelding, true);
-        }
-    }
-
 
     @Override
     public void loggINFO(String strMelding) {
@@ -182,12 +174,6 @@ public class Loggekyklop implements LoggekyklopAktig{
     public void loggTEST(String strMelding){
         System.out.println(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTidSekund() + " | " +
                 getCallingMethod(4).toString() + " TEST : " + strMelding);
-    }
-
-    public void loggTilFilINFO(String strMelding) {
-        if (nivaa.ordinal() == Nivaa.INFO.ordinal()) {
-            printLog(Nivaa.INFO,strMelding,true);
-        }
     }
 
     private void printLog(Nivaa nivaa, String meldingString){

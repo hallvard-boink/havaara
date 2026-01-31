@@ -29,6 +29,8 @@ public class CSVEksportkyklop implements CSVEksportkyklopAktig {
     private Boolean blnLeggTilTidspunktIFilnavn = true;
     private String strFilnavn;
 
+
+
     public static CSVEksportkyklop hent(){
         if (csvEksportkyklop == null) {
             csvEksportkyklop = new CSVEksportkyklop();
@@ -49,25 +51,28 @@ public class CSVEksportkyklop implements CSVEksportkyklopAktig {
         this.delimiter = delimiter;
     }
 
+
+
     // --------
     // Denne brukes!
     // --------
     @Override
-    public void eksporterArrayListTilTekst(String strEntitetsnavn, ArrayList alObjekter) {
-        byggOppFeltliste(alObjekter.get(0));
+
+    public void eksporterArrayListTilTekst(String entitetsnavnString, ArrayList objekterArrayList) {
+        byggOppFeltliste(objekterArrayList.get(0));
         if (feltListe.isEmpty()) {
             Loggekyklop.bruk().loggFEIL("Ingen felter i bean er merket med @SkalEksporteres. Ingen felter blir dermed eksportert, avbryter.");
             return;
         }
 
         if (blnLeggTilTidspunktIFilnavn) {
-            strFilnavn = strEntitetsnavn + "_" + Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid();
+            strFilnavn = entitetsnavnString + "_" + Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid();
         }
         strFilnavn = strFilnavn + ".csv";
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(strFilnavn)));
-            writer.write(lagCSVTekstMedHeaderAvArrayList(alObjekter));
+            writer.write(lagCSVTekstMedHeaderAvArrayList(objekterArrayList));
             writer.close();
             Notification.show("Eksporterte teksten til filen " + strFilnavn);
         } catch (IOException e) {
@@ -94,34 +99,47 @@ public class CSVEksportkyklop implements CSVEksportkyklopAktig {
 
 
 
-    private String hentVerdier_UtFraFeltListe(Object o) {
+    private String hentVerdier_UtFraFeltListe(Object objectParameter) {
+        EntitetAktig entitet;
+        if (!(objectParameter instanceof EntitetAktig)) {
+            Loggekyklop.bruk().loggADVARSEL("Objektet " + objectParameter.toString() + " er ikke en entitet. Dette skal normalt ikke gå an. Sjekk Havaara!");
+            return "";
+        } else {
+            entitet = (EntitetAktig) objectParameter;
+        }
+
         if (feltListe.isEmpty()) {
             Loggekyklop.bruk().loggADVARSEL("Du har glemt å oppdatere feltlista. Ikkeno problem, jeg har fiksa for deg. Men det er slurv, altså!");
-            byggOppFeltliste(o);
+            byggOppFeltliste(entitet);
         }
 
         StringBuilder sbFields = new StringBuilder();
         Integer intTeller = 0;
-        for (Field f:feltListe) {
+        for (Field field:feltListe) {
             intTeller++;
             if (intTeller>1) {
                 sbFields.append(delimiter);
             }
 
-            Object value="";
+
+            String valueString = "";
             try {
-                value = f.get(o);
-                if (value==null) {
-                    value="";
-                } else if (f.isAnnotationPresent(Entity.class)) {
-                    value = o.toString();
+                Object value = field.get(entitet);
+                if (value!=null) {
+                    if (value instanceof EntitetAktig) {
+                        valueString = ((EntitetAktig) value).getUuid().toString();
+                    } else {
+                        valueString = value.toString();
+                    }
+                } else {
+                    valueString = "";
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Loggekyklop.bruk().loggADVARSEL("Klarte ikke å hente ut verdien av feltet " + field.getName() + " av objektet " + objectParameter);
             }
 
-
-            sbFields.append(TekstKyklop.hent().fjernNylinjeFraTekstfelt(value.toString()));
+            valueString = TekstKyklop.hent().fjernNylinjeFraTekstfelt(valueString);
+            sbFields.append(valueString);
         }
         return sbFields.toString();
     }

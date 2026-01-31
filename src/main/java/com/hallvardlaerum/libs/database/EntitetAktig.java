@@ -23,4 +23,18 @@ public interface EntitetAktig {
      */
     String hentBeskrivendeNavn();
 
+    String hentEksportID();
+
+    static String trekkUtUUID(String eksportIdString) {
+        if (eksportIdString==null) {
+            return null;
+        } else {
+            if (eksportIdString.contains("UUID:")) {
+                return eksportIdString.split("UUID:")[1];
+            } else {
+                return null;
+            }
+        }
+    }
+
 }

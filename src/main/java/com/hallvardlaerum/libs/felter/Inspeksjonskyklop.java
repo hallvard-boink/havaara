@@ -73,4 +73,6 @@ public class Inspeksjonskyklop {
             this.superklasse = superklasse;
         }
     }
+
+
 }

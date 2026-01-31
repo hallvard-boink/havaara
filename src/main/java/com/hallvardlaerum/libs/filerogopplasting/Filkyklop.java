@@ -1,7 +1,6 @@
 package com.hallvardlaerum.libs.filerogopplasting;
 
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
-import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.HelTallMester;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -16,15 +15,37 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class Filkyklop {
     private static Filkyklop filkyklop;
-    private static Float maksFilStoerrelseMb = 2.0F;  //TODO: Denne kan legges til en preferansekyklop, som lagrer i JSON-fil.
+    private static final Float maksFilStoerrelseMb = 2.0F;  //TODO: Denne kan legges til en preferansekyklop, som lagrer i JSON-fil.
     private static File rotmappeFile = null;
-    private static String rotmappeNavnString = null;
+
+
+    /**
+     * Returnerer en array som bare inneholder filer hvor filnavnet slutter på extensionString
+     *
+     * @param extensionString Filekstensjonen uten punktum, for eksempel "zip" eller "jpeg"
+     * @return
+     */
+    public File[] filtrerEtterFilType(File[] filArray, String extensionString){
+        if (extensionString==null) {
+            return filArray;
+        }
+
+        ArrayList<File> fileArrayList = new ArrayList<>();
+        for (File fil:filArray) {
+            if (fil.getName().endsWith(extensionString)) {
+                fileArrayList.add(fil);
+            }
+        }
+        return fileArrayList.toArray(new File[0]);
+
+    }
 
     public File hentElleropprettFil(StandardmappeEnum standardmappeEnum, String filnavnString){
         File fil = new File(Filkyklop.hent().hentEllerOpprettStandardmappe(standardmappeEnum) + "/" + filnavnString);

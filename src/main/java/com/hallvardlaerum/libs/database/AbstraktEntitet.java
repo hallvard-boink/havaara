@@ -90,4 +90,16 @@ public abstract class AbstraktEntitet implements EntitetAktig {
     public int hashCode() {
         return Objects.hashCode(uuid);
     }
+
+    @Override
+    public String hentEksportID() {
+        if (uuid!=null) {
+            return "UUID:" + uuid;
+        } else {
+            return hentBeskrivendeNavn();
+        }
+    }
+
+
+
 }

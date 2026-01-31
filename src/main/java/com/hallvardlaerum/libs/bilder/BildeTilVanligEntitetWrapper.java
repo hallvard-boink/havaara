@@ -46,4 +46,13 @@ public class BildeTilVanligEntitetWrapper<Bildeklasse extends BildeentitetAktig>
     public String hentBeskrivendeNavn() {
         return bildeEntitet.hentBeskrivendeNavn();
     }
+
+    @Override
+    public String hentEksportID() {
+        if (getUuid()!=null){
+            return "UUID:" + getUuid();
+        } else {
+            return hentBeskrivendeNavn();
+        }
+    }
 }
