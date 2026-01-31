@@ -3,17 +3,19 @@ package com.hallvardlaerum.libs.felter;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
 import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 public class HelTallMester {
 
-    public static String integerFormatertSom00(Integer tall) {
+    public static String formaterIntegerSom00(Integer tall) {
         return String.format("%02d",tall);
     }
 
-    public static String integerFormatertSom000(Integer tall) {
+    public static String formaterIntegerSom000(Integer tall) {
         return String.format("%03d",tall);
     }
+
 
     public static Integer konverterStrengMedDesimalTilInteger(String tallString) {
         if (tallString==null || tallString.isEmpty()) {
@@ -52,7 +54,20 @@ public class HelTallMester {
 
     }
 
-    public static String integerFormatertSomStortTall(Integer tall) {
+    public static String konverterDoubleTilIntegerFormatertSomStreng(double tallDouble){
+        Integer tallInteger = Math.round((float)tallDouble);
+        return integerFormatertSomStortTall(tallInteger);
+    }
+
+    public static Integer konverterLongTilInteger(Long valueLong) {
+        if (valueLong==null){
+            return null;
+        } else {
+            return valueLong.intValue();
+        }
+    }
+
+    public static String formaterIntegerSomStortTall(Integer tall) {
         if (tall==null) {
             return "";
         } else {
@@ -61,12 +76,79 @@ public class HelTallMester {
         }
     }
 
-    public static String integerFormatertSomStortTallMedPadding(Integer tall) {
+    public static String formaterIntegerSomStortTallMedPadding(Integer tall) {
         if (tall==null) {
             return "";
         } else {
             //return String.format("%1$,",tall);
             return String.format(Locale.of("no"),"%,10d", tall);
+        }
+    }
+
+
+    // === FORELDETE METODER ===
+
+    /**
+     * @deprecated bruk formaterIntegerSom00 i stedet
+     *
+     */
+    @Deprecated
+    public static String integerFormatertSom00(Integer tall) {
+        return String.format("%02d",tall);
+    }
+
+    /**
+     * @deprecated bruk formaterIntegerSom000 i stedet
+     *
+     */
+    @Deprecated
+    public static String integerFormatertSom000(Integer tall) {
+        return String.format("%03d",tall);
+    }
+
+
+    /**
+     * @deprecated Bruk konverterDoubleTilIntegerFormatertSomStreng i stedet
+     *
+     */
+    @Deprecated
+    public static String konverterDoubleTilFormatertIntegerSomStreng(double tallDouble){
+        Integer tallInteger = Math.round((float)tallDouble);
+        return integerFormatertSomStortTall(tallInteger);
+    }
+
+
+    /**
+     * @deprecated Bruk formaterIntegerSomStortTall() i stedet
+     *
+     */
+    @Deprecated
+    public static String integerFormatertSomStortTall(Integer tall) {
+        return formaterIntegerSomStortTall(tall);
+    }
+
+    /**
+     * @deprecated Bruk formaterIntegerSomStortTallMedPadding i stedet
+     *
+     */
+    @Deprecated
+    public static String integerFormatertSomStortTallMedPadding(Integer tall) {
+        return formaterIntegerSomStortTallMedPadding(tall);
+    }
+
+    public static Integer konverterBigdecimalTilInteger(BigDecimal bigDecimal) {
+        return konverterBigdecimalTilInteger(bigDecimal,false);
+    }
+
+    public static Integer konverterBigdecimalTilInteger(BigDecimal bigDecimal, boolean nullSom0) {
+        if (bigDecimal == null) {
+            if (nullSom0) {
+                return 0;
+            } else {
+                return null;
+            }
+        } else {
+            return konverterStrengMedDesimalTilInteger(bigDecimal.toString());
         }
     }
 }

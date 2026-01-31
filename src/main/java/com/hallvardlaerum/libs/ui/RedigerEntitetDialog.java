@@ -9,7 +9,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlasse extends EntitetAktig> extends Dialog{
+
+public class RedigerEntitetDialog<Entitet extends EntitetAktig, OmsluttendeEntitet extends EntitetAktig> extends Dialog{
 
     private RedigeringsomraadeMal<Entitet> redigeringsomraade;
     private RedigeringsomraadeMal<OmsluttendeEntitet> omsluttendeRedigeringsomraade;
@@ -132,10 +133,10 @@ public class RedigerEntitetDialog<BarneKlasse extends EntitetAktig, ForelderKlas
     }
 
     private void lagreEntitet() {
-            barnRedigeringsomraade.skrivBean();
-            barnEntitetservice.lagre(barnRedigeringsomraade.getEntitet());
-            barnEntitetservice.flush();
-            forelderEntitetservice.flush();
+            redigeringsomraade.skrivBean();
+            entitetservice.lagre(redigeringsomraade.hentEntitet());
+            entitetservice.flush();
+            omsluttendeEntitetservice.flush();
             this.close();
 
             if (redigerEntitetDialogEgnet!=null) {

@@ -5,7 +5,10 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 /**
  * Litt usikker på om jeg skal bruke denne eller legge funksjonaliteten i maler for andre klasser
+ * @deprecated Bruk heller spesialiserte klasser av komponenter, ferdig pyntet.
+ *
  */
+@Deprecated(forRemoval = true, since = "1.8.2")
 public class PynteKyklop {
     private static PynteKyklop pynteKyklop;
 

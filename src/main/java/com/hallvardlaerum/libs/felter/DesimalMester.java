@@ -7,7 +7,11 @@ import static java.lang.Math.round;
 
 public class DesimalMester {
 
-    // Her bestemmer DecimalFormat antall sifre, tydeligvis. Men da må ikke tallet bli for lite.
+    /**
+     * @deprecated Bruk tilsvarende i HelTallMester i stedet
+     * Her bestemmer DecimalFormat antall sifre, tydeligvis. Men da må ikke tallet bli for lite.
+     */
+    @Deprecated
     public static String konverterDoubleTilFormatertIntegerSomStreng(double tallDouble){
         Integer tallInteger = Math.round((float)tallDouble);
         return HelTallMester.integerFormatertSomStortTall(tallInteger);
@@ -17,6 +21,7 @@ public class DesimalMester {
         return rundAv(tall, 2);
     }
 
+
     private static double rundAv(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
@@ -25,6 +30,11 @@ public class DesimalMester {
         return bd.doubleValue();
     }
 
+    /**
+     * @deprecated Bruk tilsvarende i HelTallMester i stedet
+     *
+     */
+    @Deprecated
     public static Integer konverterBigdecimalTilInteger(BigDecimal bigDecimal) {
         if (bigDecimal == null) {
             return null;

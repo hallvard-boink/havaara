@@ -59,8 +59,6 @@ public interface EntitetserviceAktig<Entitet extends EntitetAktig,
     ArrayList<Entitet> finnAlleRedigertDatoTidMellom(LocalDateTime fraDatoTid, LocalDateTime tilDatoTid);
     Entitet finnSistRedigert();
 
-    RedigeringsomraadeAktig<Entitet> hentRedigeringsomraadeAktig();
-
     int konverterOffsetOgLimitTilPageNumber(int offsetInt, int limitInt);
 
 

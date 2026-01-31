@@ -15,9 +15,9 @@ public class SlettEntitetDialog<Entitet extends EntitetAktig> extends Dialog {
     private Span hovedomraadeSpan;
     private RedigeringsomraadeAktig<Entitet> redigeringsomraadeAktig;
 
-    public SlettEntitetDialog(EntitetserviceAktig<Entitet,?> entitetservice) {
+    public SlettEntitetDialog(EntitetserviceAktig<Entitet,?> entitetservice, RedigeringsomraadeAktig<Entitet> redigeringsomraadeAktig) {
         this.entitetservice = entitetservice;
-        this.redigeringsomraadeAktig = entitetservice.hentRedigeringsomraadeAktig();
+        this.redigeringsomraadeAktig = redigeringsomraadeAktig;
 
         opprettLayout();
 

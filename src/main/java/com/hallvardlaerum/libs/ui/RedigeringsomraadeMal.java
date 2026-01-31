@@ -22,15 +22,15 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
         implements RedigeringsomraademalAktig<Entitet> {
     private Entitet entitet;
     private Binder<Entitet> binder;
-    private Component fokusComponent;
+    protected Component fokusComponent;
 
-    private DateTimePicker opprettetDatoTid;
-    private DateTimePicker redigertDatoTid;
-    private VerticalLayout kjerneVerticalLayout;
-    private TabSheet tabSheet;
-    private FormLayout formLayoutKjerne;
+    protected DateTimePicker opprettetDatoTid;
+    protected DateTimePicker redigertDatoTid;
+    protected TabSheet tabSheet;
     private VerticalLayout underFelterVerticalLayout;
+    private VerticalLayout kjerneVerticalLayout;
     private VerticalLayout overFelterVerticalLayout;
+    private FormLayout formLayoutKjerne;
     private ViewmalAktig<?,?> delAvView;
     private final String hovedtabnavnString="Hoved";
 
@@ -115,7 +115,7 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
     @Override
     public FormLayout hentFormLayoutFraTab(String tabTittelString){
         if(tabSheet==null) {
-            opprettTabOgEvtTabSheet(hovedtabnavnString);
+            opprettTabOgEvtTabSheet(tabTittelString);
         }
 
         for (int i = 0; i<tabSheet.getTabCount(); i++) {
@@ -327,7 +327,12 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
         this.binder = binder;
     }
 
-    @Deprecated
+    /**
+     * @deprecated
+     * Bytt ut denne med {@link RedigeringsomraadeMal#hentEntitet()}
+     * @return entitet
+     */
+    @Deprecated(since = "v1.8.0", forRemoval = true)
     @Override
     public Entitet getEntitet() {
         return entitet;
@@ -406,7 +411,12 @@ public abstract class RedigeringsomraadeMal<Entitet extends EntitetAktig>
     }
 
     @Override
-    public VerticalLayout hentUnderFelterVerticalLatout() {
+    public VerticalLayout hentUnderFelterVerticalLayout() {
         return underFelterVerticalLayout;
+    }
+
+    @Override
+    public VerticalLayout hentKjerneVerticalLayout(){
+        return kjerneVerticalLayout;
     }
 }

@@ -27,6 +27,14 @@ public class Datokyklop {
     private final DateTimeFormatter maanedsnavnAarTimeFormatter;
 
 
+    public LocalDate finnFoersteIAaret(LocalDate dato){
+        if (dato==null) {
+            return null;
+        }
+        return LocalDate.of(dato.getYear(),1,1);
+
+    }
+
     public LocalDate finnSisteIAaret(LocalDate datoFra){
         if (datoFra==null) {
             return null;

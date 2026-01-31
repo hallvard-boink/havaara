@@ -12,19 +12,23 @@ public enum DatopresisjonEnum implements EnumAktig {
     private String tittel;
     private String beskrivelse;
 
-
     public static DatopresisjonEnum hentFraTittel(String tittel) {
-        if (tittel==null || tittel.isEmpty()) {
-            return null;
-        }
-
-        for (DatopresisjonEnum d:DatopresisjonEnum.values()) {
-            if (d.getTittel().equalsIgnoreCase(tittel)) {
-                return d;
-            }
-        }
-        return null;
+        return EnumAktig.hentFraTittel(DatopresisjonEnum.class,tittel);
     }
+
+
+//    public static DatopresisjonEnum hentFraTittel(String tittel) {
+//        if (tittel==null || tittel.isEmpty()) {
+//            return null;
+//        }
+//
+//        for (DatopresisjonEnum d:DatopresisjonEnum.values()) {
+//            if (d.getTittel().equalsIgnoreCase(tittel)) {
+//                return d;
+//            }
+//        }
+//        return null;
+//    }
 
     DatopresisjonEnum(String tittel, String beskrivelse) {
         this.tittel = tittel;
@@ -45,12 +49,10 @@ public enum DatopresisjonEnum implements EnumAktig {
         return beskrivelse;
     }
 
-    @Override
     public String getTittelIImportfil() {
         return tittel;
     }
 
-    @Override
     public String getTittelMedBeskrivelse() {
         return tittel + " (" + beskrivelse + ")";
     }

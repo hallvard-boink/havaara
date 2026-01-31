@@ -80,13 +80,13 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
 
     @Override
     public void setBildeentitet(BildeentitetAktig bildeentitet) {
-        super.setEntitet((Bildeklasse) bildeentitet);
+        super.settEntitet((Bildeklasse) bildeentitet);
     }
 
 
     @Override
     public Bildeklasse getBildeentitet() {
-        return super.getEntitet();
+        return super.hentEntitet();
     }
 
     @Override
@@ -95,8 +95,8 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
     }
 
     @Override
-    public Bildeklasse getEntitet() {
-        return super.getEntitet();
+    public Bildeklasse hentEntitet() {
+        return super.hentEntitet();
     }
 
 
@@ -107,8 +107,8 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
             return;
         }
 
-        if (getEntitet()!=null) {
-            bildeOpplastingsKomponent.hentBildeFraFilnavn(getEntitet().getFilnavn());
+        if (hentEntitet()!=null) {
+            bildeOpplastingsKomponent.hentBildeFraFilnavn(hentEntitet().getFilnavn());
 
         } else {
             bildeOpplastingsKomponent.hentBildeFraFilnavn("");
@@ -188,8 +188,8 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
 
 
     private ArrayList<Bildeklasse> hentOppdatertListeAvBilder() {
-        if (getEntitet() instanceof EntitetMedForelderAktig) {
-            EntitetMedForelderAktig bildeMedForelder =  (EntitetMedForelderAktig) getEntitet();
+        if (hentEntitet() instanceof EntitetMedForelderAktig) {
+            EntitetMedForelderAktig bildeMedForelder =  (EntitetMedForelderAktig) hentEntitet();
             EntitetMedBarnAktig<Bildeklasse> forelder = (EntitetMedBarnAktig<Bildeklasse>) bildeMedForelder.getForelder();
             //EntitetMedBarnAktig<Bildeklasse> forelder = (EntitetMedBarnAktig<Bildeklasse>) ((EntitetMedForelderAktig) getEntitet()).getForelder();
             return forelder.hentBarn();
@@ -204,14 +204,14 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
     @Override
     public void lagringEtterOpplastingEllerValgAvFil(String nyttFilnavnString) {
         filnavnTextField.setValue(nyttFilnavnString);
-        Bildekyklop.hent().oppdaterBildeentitetFraFilnavn(nyttFilnavnString, (AbstraktBildeentitet) getEntitet());
+        Bildekyklop.hent().oppdaterBildeentitetFraFilnavn(nyttFilnavnString, (AbstraktBildeentitet) hentEntitet());
         lesBean();
         bildeOpplastingsKomponent.hentBildeFraFilnavn(filnavnTextField.getValue());
     }
 
     @Override
     public String getFilnavn() {
-        return getEntitet().getFilnavn();
+        return hentEntitet().getFilnavn();
     }
 
     @Override
@@ -225,7 +225,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
     private void lagreBildeinfo_oppdaterHovedbildeInfo(){
         lagreBildeinfo();
         ArrayList<Bildeklasse> bilder = hentOppdatertListeAvBilder();
-        bilder.remove(getEntitet());
+        bilder.remove(hentEntitet());
         for (BildeentitetAktig bilde:bilder) {
             bilde.setErHovedbilde(false);
         }
@@ -234,7 +234,7 @@ public class BildeRedigeringsomraadeMal<Bildeklasse extends BildeentitetAktig<Fo
 
     private void lagreBildeinfo(){
         skrivBean();
-        bildeService.lagre(getEntitet());
+        bildeService.lagre(hentEntitet());
     }
 
     @Override

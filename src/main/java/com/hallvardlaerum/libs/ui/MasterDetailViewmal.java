@@ -40,9 +40,8 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * Dette er en generisk klasse som nye Views i Vaadin skal ekstendere for å få en lik layout og
- * mye felles prosedyrer gratis.
- *
+ * <p>Dette er en generisk klasse som nye Views i Vaadin skal ekstendere for å få en lik layout og
+ * protectedmye felles prosedyrer gratis.</p>
  * Malen inneholder to deler: søkedel og redigeringssdel
  * Søkedelene har grid og filterfelter, samt en knapperad for eksport/import og testdata
  * Redigeringsdelen har knapperad med ny/lagre/slett-knapper og et entitetspesifikt redigeringsområde.
@@ -54,28 +53,41 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
         Repo extends JpaRepository<Entitet, UUID> & JpaSpecificationExecutor<Entitet> & RepositoryTillegg<Entitet>>
         extends HorizontalLayout implements ViewmalAktig<Entitet, Repo> {
     private EntitetserviceAktig<Entitet, ?> entitetserviceAktig;
-    private Grid<Entitet> soekeGrid;
-    private HorizontalLayout layoutRedigeringsknapper;
-    private HorizontalLayout layoutSoekeknapper;
+    protected Grid<Entitet> soekeGrid;
+    protected HorizontalLayout layoutRedigeringsknapper;
+    protected HorizontalLayout layoutSoekeknapper;
 
-    private HeaderRow headerRowFilterfelter;
-    private ViewCRUDStatusEnum viewCRUDStatus = ViewCRUDStatusEnum.UROERT;
+    protected HeaderRow headerRowFilterfelter;
+    protected ViewCRUDStatusEnum viewCRUDStatus = ViewCRUDStatusEnum.UROERT;
     private RedigeringsomraadeAktig<Entitet> redigeringsomraade;
-    private VerticalLayout redigeringsomraadeSomVerticalLayout;
+    protected VerticalLayout redigeringsomraadeSomVerticalLayout;
     private SplitLayout.Orientation orientering = SplitLayout.Orientation.HORIZONTAL;
     private ConfigurableFilterDataProvider<Entitet,Void,String> filterProvider;
-    private SplitLayout splitLayout;
+    protected SplitLayout splitLayout;
 
     private Button nyButton = null;
     private Button lagreButton = null;
     private Button slettButton = null;
 
-    private MenuBar verktoeyMenuBar;
-    private MenuItem verktoeyMenuItem;
-    private SubMenu verktoeySubMenu;
+    protected MenuBar verktoeyMenuBar;
+    protected MenuItem verktoeyMenuItem;
+    protected SubMenu verktoeySubMenu;
+
+    protected MenuItem opprettTestdataMenuItem;
+    protected MenuItem slettAlleMenuItem;
+    protected MenuItem eksporterTilCSVMenuItem;
+    protected MenuItem importerFraCSVMenuItem;
+    protected MenuItem byttOrienteringAvSplitLayoutMenuItem;
 
     private H2 vinduTittel;
-    private GridInnholdsTypeEnum gridInnholdsTypeEnum = GridInnholdsTypeEnum.ALLERADER;
+    protected GridInnholdsTypeEnum gridInnholdsTypeEnum = GridInnholdsTypeEnum.ALLE_RADER_SAMTIDIG;
+
+// endregion
+
+
+// ===========================
+// region 1. Init og Constructor
+// ===========================
 
     public MasterDetailViewmal() {
     }
@@ -128,7 +140,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
                               RedigeringsomraadeAktig<Entitet> redigeringsomraade,
                               SplitLayout.Orientation orientering,
                               Double splitPositionDouble) {
-        opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL, splitPositionDouble, GridInnholdsTypeEnum.ALLERADER);
+        opprettLayout(entitetserviceAktig,redigeringsomraade,SplitLayout.Orientation.VERTICAL, splitPositionDouble, GridInnholdsTypeEnum.ALLE_RADER_SAMTIDIG);
     }
 
     @Override
@@ -159,7 +171,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
 
         instansOpprettGrid();
 
-        if (gridInnholdsTypeEnum == GridInnholdsTypeEnum.ALLERADER) {
+        if (gridInnholdsTypeEnum == GridInnholdsTypeEnum.ALLE_RADER_SAMTIDIG) {
             headerRowFilterfelter = Gridkyklop.hent().alleRaderTilpassKolonnerOgOpprettFilteradIGrid(soekeGrid);
         } else if (gridInnholdsTypeEnum == GridInnholdsTypeEnum.PORSJONSVIS) {
             headerRowFilterfelter = Gridkyklop.hent().porsjonsviseRaderTilpassKolonnerOgOpprettFilteradIGrid(soekeGrid);
@@ -203,12 +215,11 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     }
 
 
-    private void tilpassFilterfelterIGrid() {
+    protected void tilpassFilterfelterIGrid() {
         List<HeaderRow> headerRows = soekeGrid.getHeaderRows();
         List<HeaderRow.HeaderCell> celler = headerRows.getLast().getCells();
         for (HeaderRow.HeaderCell cell : celler) {
-            if (cell.getComponent() instanceof TextField) {
-                TextField textFieldFilter = (TextField) cell.getComponent();
+            if (cell.getComponent() instanceof TextField textFieldFilter) {
                 textFieldFilter.setValueChangeMode(ValueChangeMode.LAZY);
                 textFieldFilter.setWidthFull();
                 textFieldFilter.setClearButtonVisible(true);
@@ -220,8 +231,7 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
                 comboBox.setClearButtonVisible(true);
                 comboBox.addValueChangeListener(e -> settFilter());
 
-            } else if (cell.getComponent() instanceof DatePicker) {
-                DatePicker datePicker = (DatePicker)cell.getComponent();
+            } else if (cell.getComponent() instanceof DatePicker datePicker) {
                 datePicker.setWidthFull();
                 datePicker.setLocale(Locale.forLanguageTag("no"));
 //                datePicker.setLocale(Locale.of("no"));
@@ -236,15 +246,13 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
                 cell.setComponent(booleanCombobox);
 
 
-            } else if (cell.getComponent() instanceof IntegerField) {
-                IntegerField integerField = (IntegerField) cell.getComponent();
+            } else if (cell.getComponent() instanceof IntegerField integerField) {
                 integerField.setValueChangeMode(ValueChangeMode.LAZY);
                 integerField.setWidthFull();
                 integerField.setClearButtonVisible(true);
                 integerField.addValueChangeListener(e -> settFilter());
 
-            } else if (cell.getComponent() instanceof NumberField) {
-                NumberField numberField = (NumberField) cell.getComponent();
+            } else if (cell.getComponent() instanceof NumberField numberField) {
                 numberField.setValueChangeMode(ValueChangeMode.LAZY);
                 numberField.setWidthFull();
                 numberField.setClearButtonVisible(true);
@@ -259,77 +267,93 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
     }
 
 
-    private VerticalLayout opprettSoekeomraade(){
-        VerticalLayout verticalLayout = new VerticalLayout();
+    protected VerticalLayout opprettSoekeomraade(){
+        opprettSoekeomraade_leggTilTittel();
+        opprettSoekeomraade_leggTilVerktoyMeny();
+        opprettSoekeomraade_leggTilVerktoyMeny_opprettTestDataMenuItem();
+        opprettSoekeomraade_leggTilVerktoyMeny_opprettEksporterTilCSVMenuItem();
+        opprettSoekeomraade_leggTilVerktoyMeny_opprettImporterFraCSVMenuItem();
+        opprettSoekeomraade_leggTilVerktoyMeny_opprettSlettAlleMenuItem();
+        opprettSoekeomraade_leggTilVerktoyMeny_opprettSeparator();
+        opprettSoekeomraade_leggTilVerktoyMeny_byttOrienteringAvSplitLayoutMenuItem();
+        opprettSoekeomraade_leggTilSoekeGrid();
+        return opprettSoeomraade_settSammenDetHele();
+    }
+
+    protected VerticalLayout opprettSoeomraade_settSammenDetHele(){
         layoutSoekeknapper = new HorizontalLayout();
-        opprettSoekeomraade_leggTilKnapperOgTittel();
         layoutSoekeknapper.setWidthFull();
+        layoutSoekeknapper.addToStart(vinduTittel);
+        layoutSoekeknapper.addToEnd(verktoeyMenuBar);
 
+        VerticalLayout verticalLayout = new VerticalLayout();
+        verticalLayout.add(layoutSoekeknapper, soekeGrid);
+        verticalLayout.setSizeFull();
+        return verticalLayout;
+    }
 
+    protected void opprettSoekeomraade_leggTilTittel(){
+        vinduTittel = new H2(entitetserviceAktig.hentEntitetsnavn());
+    }
+
+    protected void opprettSoekeomraade_leggTilSoekeGrid(){
         soekeGrid = new Grid<>();
         soekeGrid.addItemClickListener(e -> {
             redigeringsomraade.setEntitet(e.getItem());
             viewCRUDStatus = ViewCRUDStatusEnum.POST_KAN_REDIGERES;
             oppdaterRedigeringsomraade();
         });
-
         soekeGrid.setSizeFull();
-
-        verticalLayout.add(layoutSoekeknapper, soekeGrid);
-        verticalLayout.setSizeFull();
-        return verticalLayout;
-
-
     }
 
-    @Override
-    public H2 hentVindutittel() {
-        return vinduTittel;
-    }
-
-    @Override
-    public SubMenu hentVerktoeySubMeny(){
-        return verktoeySubMenu;
-    }
-
-    private void opprettSoekeomraade_leggTilKnapperOgTittel(){
-        vinduTittel = new H2(entitetserviceAktig.hentEntitetsnavn());
-
+    protected void opprettSoekeomraade_leggTilVerktoyMeny(){
         verktoeyMenuBar = new MenuBar();
         verktoeyMenuBar.addThemeVariants(MenuBarVariant.LUMO_DROPDOWN_INDICATORS);
         verktoeyMenuItem = verktoeyMenuBar.addItem("Verktøy");
         verktoeySubMenu = verktoeyMenuItem.getSubMenu();
+    }
 
-        MenuItem opprettTestdataMenuItem = verktoeySubMenu.addItem("Opprett testdata");
+    protected void opprettSoekeomraade_leggTilVerktoyMeny_opprettTestDataMenuItem(){
+        opprettTestdataMenuItem = verktoeySubMenu.addItem("Opprett testdata");
         opprettTestdataMenuItem.addClickListener(e -> {
             entitetserviceAktig.opprettTestdata();
             soekeGrid.setItems(entitetserviceAktig.finnAlle());
             oppdaterSoekeomraadeEtterRedigeringAvEntitet();
         });
+    }
 
-        MenuItem slettAlleMenuItem = verktoeySubMenu.addItem("Slett alle");
+    protected void opprettSoekeomraade_leggTilVerktoyMeny_opprettSlettAlleMenuItem(){
+        slettAlleMenuItem = verktoeySubMenu.addItem("Slett alle");
         slettAlleMenuItem.addClickListener(e -> {
             entitetserviceAktig.slettAlle();
             soekeGrid.setItems(entitetserviceAktig.finnAlle());
             oppdaterSoekeomraadeEtterRedigeringAvEntitet();
         });
+    }
 
-        MenuItem eksporterTilCSVMenuItem = verktoeySubMenu.addItem("Eksporter til CSV");
+    protected void opprettSoekeomraade_leggTilVerktoyMeny_opprettEksporterTilCSVMenuItem(){
+        eksporterTilCSVMenuItem = verktoeySubMenu.addItem("Eksporter til CSV");
         eksporterTilCSVMenuItem.addClickListener(e -> {
             String strEntitetsnavn = TekstKyklop.hent().hentSisteIStrengMedDelimiter(entitetserviceAktig.opprettEntitet().getClass().getName());
             CSVEksportkyklop.hent().eksporterArrayListTilTekst(strEntitetsnavn,entitetserviceAktig.finnAlle());
         });
+    }
 
-        MenuItem importerFraCSVMenuItem = verktoeySubMenu.addItem("Importer fra CSV");
+    protected void opprettSoekeomraade_leggTilVerktoyMeny_opprettImporterFraCSVMenuItem(){
+        importerFraCSVMenuItem = verktoeySubMenu.addItem("Importer fra CSV");
         importerFraCSVMenuItem.addClickListener(e -> {
             new CSVImportmester().velgImportfilOgKjoerImport(entitetserviceAktig);
             soekeGrid.setItems(entitetserviceAktig.finnAlle());
             oppdaterSoekeomraadeEtterRedigeringAvEntitet();
         });
+    }
 
+    protected void opprettSoekeomraade_leggTilVerktoyMeny_opprettSeparator(){
         verktoeySubMenu.addSeparator();
+    }
 
-        MenuItem byttOrienteringAvSplitLayoutMenuItem = verktoeySubMenu.addItem("Bytt orientering av layout");
+    protected void opprettSoekeomraade_leggTilVerktoyMeny_byttOrienteringAvSplitLayoutMenuItem(){
+        byttOrienteringAvSplitLayoutMenuItem = verktoeySubMenu.addItem("Bytt orientering av layout");
         byttOrienteringAvSplitLayoutMenuItem.addClickListener(e -> {
             if (orientering==null || orientering == SplitLayout.Orientation.HORIZONTAL) {
                 orientering = SplitLayout.Orientation.VERTICAL;
@@ -338,17 +362,8 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
             }
             splitLayout.setOrientation(orientering);
         });
-
-
-        /** For å teste HallvardsErrorHandler
-        Button buttonError = new Button("Click me", event -> {
-            throw new IllegalArgumentException("No clicking! BAD BOY!!");
-        });
-         */
-
-        layoutSoekeknapper.addToStart(vinduTittel);
-        layoutSoekeknapper.addToEnd(verktoeyMenuBar);
     }
+
 
     public void leggTilButtonISoekeomraadet(Button button) {
         layoutSoekeknapper.add(button);
@@ -518,109 +533,12 @@ public abstract class MasterDetailViewmal<Entitet extends AbstraktEntitet,
 
 
 
-    /**
-     * Oppdatere grid når entiteten er oppdatert, f.eks. en av feltene som vises i grid
-     */
-    public void oppdaterSoekeomraadeEtterRedigeringAvEntitet(){
 
-        oppdaterAntallRaderNederstIGrid();
 
-        if (redigeringsomraade.getEntitet() != null) {
-            if (soekeGrid.getDataProvider() instanceof ListDataView) {
-                if (viewCRUDStatus.equals(ViewCRUDStatusEnum.POST_KAN_REDIGERES)) {
-                    soekeGrid.getListDataView().refreshItem(redigeringsomraade.getEntitet());
-                } else if (viewCRUDStatus == ViewCRUDStatusEnum.NY) {
-                    soekeGrid.getListDataView().refreshAll();
-                }
-            } else {
-                if (viewCRUDStatus.equals(ViewCRUDStatusEnum.POST_KAN_REDIGERES)) {
-                    soekeGrid.getDataProvider().refreshItem(redigeringsomraade.getEntitet());
-                } else if (viewCRUDStatus == ViewCRUDStatusEnum.NY) {
-                    settFilter();
 
-                    soekeGrid.select(redigeringsomraade.getEntitet());
 
-                }
-            }
-            //scrollTilValgtRad();  // virker ikke ennå
 
-        } else if (viewCRUDStatus==ViewCRUDStatusEnum.ER_SLETTET) {
-            settFilter();
-        }
 
-    }
-
-    @Override
-    public ViewCRUDStatusEnum getCRUDStatus() {
-        return viewCRUDStatus;
-    }
-
-    @Override
-    public void oppdaterSoekeomraade(){
-        if (soekeGrid.getDataProvider() instanceof ListDataView) {
-            soekeGrid.setItems(entitetserviceAktig.finnAlle());
-        } else {
-            settFilter();
-        }
-
-        if (redigeringsomraade.getEntitet()!=null) {
-            soekeGrid.select(redigeringsomraade.getEntitet());
-        }
-    }
-
-    private void scrollTilValgtRad(){
-        if (!soekeGrid.isDetailsVisible(redigeringsomraade.getEntitet())){
-            if (soekeGrid.getDataProvider() instanceof GridListDataView<?>) {
-                for (int i = 0; i < soekeGrid.getListDataView().getItemCount(); i++) {
-                    if (redigeringsomraade.getEntitet().getUuid().equals(soekeGrid.getListDataView().getItem(i).getUuid())) {
-                        soekeGrid.scrollToIndex(i);
-                    }
-                }
-            } else if (soekeGrid.getDataProvider()!=null) {
-//                int antallRader = entitetserviceAktig.tellAntallMedSpecification();  // VIRKER IKKE ENNÅ
-//                for (int i = 0; i < antallRader; i++) {
-//                    if (redigeringsomraade.getEntitet().getUuid().equals(grid.getDataProvider().)) {
-//                        grid.scrollToIndex(i);
-//                    }
-//                }
-            }
-        }
-    }
-
-    private void oppdaterAntallRaderNederstIGrid(){
-        Grid.Column<Entitet> column = soekeGrid.getColumns().getFirst();
-        if (soekeGrid.getDataProvider() instanceof GridListDataView<?>) {
-            column.setFooter("Antall: " + soekeGrid.getListDataView().getItemCount());
-        } else {
-            int antallRader = entitetserviceAktig.tellAntallMedSpecification();
-            column.setFooter("Antall: " + antallRader);
-        }
-    }
-
-    /**
-     * Brukes etter at entiteter er lagt til fra andre steder, f.eks. Dialogbokser
-     * Erstatt med oppdaterSoekeomraade
-     * @param entitet
-     */
-    @Deprecated
-    @Override
-    public void oppdaterSoekeomraade_finnAlle(Entitet entitet){
-        oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(entitet);
-    }
-
-    @Override
-    public void oppdaterSoekeomraadeOgRedigeringsomraadeMedNyEntitet(Entitet entitet) {
-        redigeringsomraade.setEntitet(entitet);
-        if (soekeGrid.getGenericDataView() instanceof ListDataView<?,?>) {
-            soekeGrid.setItems(entitetserviceAktig.finnAlle());
-            soekeGrid.getDataProvider().refreshAll();
-        } else {
-            settFilter();
-        }
-        soekeGrid.select(redigeringsomraade.getEntitet());
-
-        oppdaterAntallRaderNederstIGrid();
-    }
 
 
 }

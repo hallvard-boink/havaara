@@ -12,6 +12,12 @@ public class HavaaraVersjonskyklop extends Versjonskyklopmal{
 
     @Override
     public void byggOppVersjoner() {
+        super.leggTilVersjon("1.8.3","2026-01-31","Finpuss i Raadyret/Blaahvalen",
+                "Banner er støttet, bare zip-filer vises i backups.");
+
+        super.leggTilVersjon("1.8.2","2026-01-01","Mer rydding",
+                "Sørget for mer entydig bruk av klasser (se 'Systemdesign og konvensjoner.md'). ");
+
         super.leggTilVersjon("1.8.1","2025-12-21","Smårydding",
                 "Ga flere metoder helt norske navn (f.eks. settEntitet), og la til klasser for lettere håndtering av layout (f.eks. HallvardsGrid og Pyntekyklop). " +
                         "Fikset oppdateringsfeil på generisk dialog.");

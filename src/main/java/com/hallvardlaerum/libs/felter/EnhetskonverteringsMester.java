@@ -3,7 +3,7 @@ package com.hallvardlaerum.libs.felter;
 /**
  * Static klasse som konverterer mellom ulike måleenheter
  */
-public class Enhetskonvertering {
+public class EnhetskonverteringsMester {
 
     public static double konverterBytesTilMegabytes(Long bytes) {
         return (double) (bytes / (1024 * 1024));

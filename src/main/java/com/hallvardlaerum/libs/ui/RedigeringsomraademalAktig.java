@@ -58,6 +58,6 @@ public interface  RedigeringsomraademalAktig<Entitet extends EntitetAktig>  {
     void aktiver(Boolean skalAktiveres);
 
     VerticalLayout hentOverFelterVerticalLayout();
-    VerticalLayout hentUnderFelterVerticalLatout();
-
+    VerticalLayout hentUnderFelterVerticalLayout();
+    VerticalLayout hentKjerneVerticalLayout();
 }

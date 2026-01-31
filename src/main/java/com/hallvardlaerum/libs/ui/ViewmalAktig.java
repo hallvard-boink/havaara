@@ -8,7 +8,6 @@ import com.hallvardlaerum.libs.database.RepositoryTillegg;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.SubMenu;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -58,7 +57,9 @@ public interface ViewmalAktig<Entitet extends EntitetAktig,
     void instansTilpassNyopprettetEntitet();
     void instansAktiverKnapperadRedigeringsfelt(Boolean aktiver);
 
-    void oppdaterSoekeomraade();
+    void oppdaterSoekeomraadeFinnAlleRader();
+
+    void oppdaterAntallRaderNederstIGrid();
 
     void oppdaterSoekeomraade_finnAlle(Entitet entitet);
     void oppdaterSoekeomraadeEtterRedigeringAvEntitet();

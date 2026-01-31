@@ -6,9 +6,8 @@ import com.hallvardlaerum.libs.eksportimport.CSVEksportkyklop;
 import com.hallvardlaerum.libs.eksportimport.CSVImportmester;
 import com.hallvardlaerum.libs.feiloglogging.Infobit;
 import com.hallvardlaerum.libs.feiloglogging.Loggekyklop;
-import com.hallvardlaerum.libs.feiloglogging.LoggekyklopAktig;
 import com.hallvardlaerum.libs.felter.Datokyklop;
-import com.hallvardlaerum.libs.felter.Enhetskonvertering;
+import com.hallvardlaerum.libs.felter.EnhetskonverteringsMester;
 import com.hallvardlaerum.libs.felter.Inspeksjonskyklop;
 import com.hallvardlaerum.libs.filerogopplasting.Filkyklop;
 import com.hallvardlaerum.libs.filerogopplasting.StandardmappeEnum;
@@ -33,6 +32,11 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Backupkyklop {
+
+// ===========================
+// region Felter
+// ===========================
+
     private static Backupkyklop backupkyklop;
     private ArrayList<EntitetserviceAktig<? extends EntitetAktig, ?>> entitetservicene;
     private Anchor lastnedAnchor;
@@ -45,6 +49,29 @@ public class Backupkyklop {
     private Tab backupsTab = null;
     private MainViewmal mainViewMal = null;
 
+// endregion
+
+
+// ===========================
+// region Forvalte entitetservicer
+// ===========================
+
+    public void leggTilEntitetservice(EntitetserviceAktig<? extends EntitetAktig, ?> entitetservice) {
+        if (entitetservicene == null) {
+            entitetservicene = new ArrayList<>();
+        }
+        if (!entitetservicene.contains(entitetservice)) {
+            entitetservicene.add(entitetservice);
+        }
+    }
+
+    public void printEntitetservicer() {
+        System.out.println();
+        System.out.println("ENTITETSERVICENE");
+        for (EntitetserviceAktig<?, ?> entitetserviceAktig:entitetservicene) {
+            Loggekyklop.bruk().loggDEBUG("Entitetservice " + entitetserviceAktig.hentEntitetsnavn());
+        }
+    }
 
     public <T extends EntitetAktig> EntitetserviceAktig<T,?> finnEntitetservice(Class<T> entitetKlasse) {
         for (EntitetserviceAktig<?,?> entitetservice:entitetservicene) {
@@ -62,6 +89,14 @@ public class Backupkyklop {
     public boolean omEntitetserviceErByggetOppAllerede(){
         return (entitetservicene == null || entitetservicene.isEmpty());
     }
+
+// endregion
+
+
+
+// ===========================
+// region GUI: Badge og Buttons
+// ===========================
 
     public ArrayList<Inspeksjonskyklop.UtvidetFelt> byggOppAlleFelterArrayList(){
         ArrayList<Inspeksjonskyklop.UtvidetFelt> alleFelterArrayList = new ArrayList<>();
@@ -82,6 +117,7 @@ public class Backupkyklop {
         return badgeSpan;
     }
 
+
     public void oppdaterBackupTab(){
         if (backupsTab !=null) {
             String strClassname;
@@ -95,6 +131,7 @@ public class Backupkyklop {
 
     }
 
+
     private void oppdaterBackupBadge(){
         if (blnBackupErAktivert) {
             badgeSpan.setText("Backup aktivert " + Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid());
@@ -107,43 +144,15 @@ public class Backupkyklop {
         }
     }
 
+
     private void oppdaterBackupBadgeTabOgListe(){
         oppdaterBackupTab();
         oppdaterBackupBadge();
         oppdaterBackupListe();
     }
 
-    private void oppdaterBackupListe(){
 
-    }
-
-
-    /** Kjør backup en time etter siste endring
-     *
-     */
-    public void startBackupdemon(){
-        scheduler = Executors.newScheduledThreadPool(1);
-        Runnable task = new Runnable() {
-            public void run() {
-                if (omDatabasenErEndretNylig()) {
-                    Loggekyklop.bruk().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Eksporterte alle data som zip-fil");
-                    opprettOgLagreBackupSomZipfil();
-
-                } else {
-                    Loggekyklop.bruk().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Ingen endringer i databasen.");
-                }
-            }
-        };
-        // Utfør oppgaven nå, og gjenta den hver 30. minutt
-        // Grensen for backup er satt til mellom 1 og 2 timer siden for å unngå at det kjøres backup mens databasen brukes.
-        // TODO Burde sikkert sjekke at det ikke kjøres backup akkurat mens brukeren bruker applikasjonen aktivt.
-        //
-        scheduler.scheduleAtFixedRate(task, 0, 30, TimeUnit.MINUTES);
-        blnBackupErAktivert = true;
-        oppdaterBackupBadgeTabOgListe();
-    }
-
-    public Button hentStartBakcupDemonButton(){
+    public Button hentStartBackupDemonButton(){
         Button startDemonButton = new Button("Start regelmessig backup hver time");
         startDemonButton.addClickListener(e -> {
             opprettOgLagreBackupSomZipfil(); //Gjør uansett backup nå
@@ -158,42 +167,6 @@ public class Backupkyklop {
         return stoppDemonButton;
     }
 
-    public void stoppBackupdemon(){
-        scheduler.close();
-        blnBackupErAktivert = false;
-        oppdaterBackupBadge();
-    }
-
-    public Boolean omDatabasenErEndretNylig(){
-        LocalDateTime forEnTimeSiden = LocalDateTime.now().minusHours(1);
-        LocalDateTime forToTimerSiden = LocalDateTime.now().minusHours(2);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Sjekker endringer mellom ");
-        sb.append(Datokyklop.hent().formaterDatoTid(forToTimerSiden)).append(" og ");
-        sb.append(Datokyklop.hent().formaterDatoTid(forEnTimeSiden)).append(" i entitetene ");
-
-        Boolean blnErEndret = false;
-        for (EntitetserviceAktig<?, ?> entitetservice: entitetservicene) {
-            sb.append(entitetservice.hentEntitetsnavn()).append(" ");
-            if (!entitetservice.finnAlleRedigertDatoTidMellom(forToTimerSiden, forEnTimeSiden).isEmpty()) {
-               blnErEndret = true;
-            }
-        }
-        System.out.println("omDatabasenErEndretNylig " + sb.toString());
-        return blnErEndret;
-    }
-
-
-    public File hentSisteBackupfilFile(){
-        File[] backupfiler = hentBackupFiler();
-        if (backupfiler.length>0) {
-            return backupfiler[0];
-        } else {
-            return new File("");
-        }
-
-    }
 
     public Anchor hentBackupLenkeButton(String strApplikasjonsnavn){
         File mappe = hentBackupmappeFile();
@@ -222,6 +195,7 @@ public class Backupkyklop {
         return lastnedAnchor;
     }
 
+
     public Anchor hentBackupLenkeButtonTilGrid(String strFilnavn) {
         String pathString="";
         try {
@@ -233,129 +207,101 @@ public class Backupkyklop {
         return new Anchor(DownloadHandler.forFile(zipFil),"");
     }
 
-    private void opprettOgLagreBackupSomZipfil(){
-        ZipOutputStream zipOut;
+// endregion
 
-        try {
-            zipOut = new ZipOutputStream(new FileOutputStream(zipFil));
-        } catch (FileNotFoundException e) {
-            Loggekyklop.bruk().loggFEIL("Feil ved opprettelse av zip-fil: " + e.getMessage() + ", avbryter");
-            return;
-        }
 
-        ZipEntry zipEntry;
-            for (EntitetserviceAktig<? extends EntitetAktig, ?> entitetservice:entitetservicene) {
-                if(!entitetservice.finnAlle().isEmpty()) {
-                    try {
-                        zipEntry = new ZipEntry(opprettFilnavnForEntitetensTekstfilIZipfil(entitetservice));
-                        zipOut.putNextEntry(zipEntry);
-                        CSVEksportkyklop.hent().oppdaterFeltliste(entitetservice);
-                        byte[] data = CSVEksportkyklop.hent().hentUtEntiteteneSomTekst(entitetservice).getBytes();
-                        zipOut.write(data);
-                        zipOut.closeEntry();
-                    } catch (IOException e) {
-                        Loggekyklop.bruk().loggFEIL("Feil ved opprettelse av zipEntry: " + e.getMessage() + ", går videre");
-                    }
+
+
+
+    // ===========================
+    // region Backupdemon og behov for backup
+    // ===========================
+
+
+    /** Kjør backup en time etter siste endring
+     *
+     */
+    public void startBackupdemon(){
+        scheduler = Executors.newScheduledThreadPool(1);
+        Runnable task = new Runnable() {
+            public void run() {
+                if (omDatabasenErEndretNylig()) {
+                    Loggekyklop.bruk().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Eksporterte alle data som zip-fil");
+                    opprettOgLagreBackupSomZipfil();
+
+                } else {
+                    Loggekyklop.bruk().loggINFO(Datokyklop.hent().hentNaavaerendeTidspunktSomDatoTid() + ": Ingen endringer i databasen.");
                 }
             }
-        try {
-            zipOut.close();
-        } catch (IOException e) {
-            Loggekyklop.bruk().loggFEIL("Feil ved lukking og lagring av zipFil: " + e.getMessage() + ".");
-        }
-
-        mainViewMal.oppdaterBackupteksttabell();
+        };
+        // Utfør oppgaven nå, og gjenta den hver 30. minutt
+        // Grensen for backup er satt til mellom 1 og 2 timer siden for å unngå at det kjøres backup mens databasen brukes.
+        // TODO Burde sikkert sjekke at det ikke kjøres backup akkurat mens brukeren bruker applikasjonen aktivt.
+        //
+        scheduler.scheduleAtFixedRate(task, 0, 30, TimeUnit.MINUTES);
+        blnBackupErAktivert = true;
+        oppdaterBackupBadgeTabOgListe();
     }
 
-    public String opprettFilnavnForEntitetensTekstfilIZipfil(EntitetserviceAktig<?, ?> entitetservice) {
-        return entitetservice.hentEntitetsnavn() + ".csv";
+
+    public void stoppBackupdemon(){
+        scheduler.close();
+        blnBackupErAktivert = false;
+        oppdaterBackupBadge();
     }
 
-    public ArrayList<Infobit> getBackupInfobiter() {
-        backuper = new ArrayList<>();
-        File[] filer = hentBackupFiler();
-        if (filer!=null && filer.length>0) {
-            for (File fil:hentBackupFiler()) {
-                String strStoerrelse = Enhetskonvertering.presenterFilstoerrelseMenneskelesbart(fil.length());
-                backuper.add(new Infobit(fil.getName(), strStoerrelse));
+
+
+    public Boolean omDatabasenErEndretNylig(){
+        LocalDateTime forEnTimeSiden = LocalDateTime.now().minusHours(1);
+        LocalDateTime forToTimerSiden = LocalDateTime.now().minusHours(2);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Sjekker endringer mellom ");
+        sb.append(Datokyklop.hent().formaterDatoTid(forToTimerSiden)).append(" og ");
+        sb.append(Datokyklop.hent().formaterDatoTid(forEnTimeSiden)).append(" i entitetene ");
+
+        Boolean blnErEndret = false;
+        for (EntitetserviceAktig<?, ?> entitetservice: entitetservicene) {
+            sb.append(entitetservice.hentEntitetsnavn()).append(" ");
+            if (!entitetservice.finnAlleRedigertDatoTidMellom(forToTimerSiden, forEnTimeSiden).isEmpty()) {
+               blnErEndret = true;
             }
-            backuper.sort((o1,o2) -> -1 * o1.getTittel().compareTo(o2.getTittel()));
         }
-        return backuper;
+        System.out.println("omDatabasenErEndretNylig " + sb.toString());
+        return blnErEndret;
     }
 
-    public File hentBackupmappeFile(){
-        return Filkyklop.hent().hentEllerOpprettStandardmappe(StandardmappeEnum.BACKUPS);
-    }
+// endregion
 
 
-    public File hentUnzipmappeFile(){
-        return Filkyklop.hent().hentEllerOpprettStandardmappe(StandardmappeEnum.UNZIP);
-    }
 
+// ===========================
+// region Filhåndtering
+// ===========================
 
-    public File[] hentBackupFiler(){
-        File backupmappeFile = hentBackupmappeFile();
-        File[] filerEmptyArray = new File[0];
-        if (backupmappeFile==null) {
-            return filerEmptyArray;
-        } else {
-            return backupmappeFile.listFiles();
-        }
-    }
+    public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+        File destFile = new File(destinationDir, zipEntry.getName());
 
-    public void slettBackupfil(String strFilnavn) {
-        File file = new File(hentBackupmappeFile().getAbsoluteFile()+"/" + strFilnavn);
-        if (!file.exists()) {
-            Notification.show("Fant ingen fil med navnet " + strFilnavn + " i mappen " + hentBackupmappeFile().getName() + ", avbryter.");
-            return;
-        }
-        boolean blnDone = file.delete();
-        if (!blnDone) {
-            Loggekyklop.bruk().loggADVARSEL("Backupfilen " + strFilnavn + " ble ikke slettet likevel.");
+        String destDirPath = destinationDir.getCanonicalPath();
+        String destFilePath = destFile.getCanonicalPath();
+
+        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
         }
 
-        oppdaterBackupListe();
+        return destFile;
     }
 
-    public void restoreBackupfilButtonMethod(String strFilnavn) {
-        File file = new File(hentBackupmappeFile().getAbsoluteFile()+"/" + strFilnavn);
-        if (!file.exists()) {
-            Notification.show("Fant ingen fil med navnet " + strFilnavn + " i mappen " + hentBackupmappeFile().getName() + ", avbryter.");
-            return;
-        }
+    public String opprettFilnavnForBackup(String strApplikasjonsNavn){
+        StringBuilder sb = new StringBuilder();
+        sb.append(strApplikasjonsNavn).append("_Backup_");
+        sb.append(Datokyklop.hent().hentDagensDatoTidForFiler());
+        sb.append(".zip");
+        strBackupFilnavn = sb.toString();
 
-        if (!pakkutBackupfiler(file)) return;
-        if (!slettAllePostene()) return;
-        if (!importerBackupfilerSomCSV()) return;
-        if (!Filkyklop.hent().slettFileneIMappe(hentUnzipmappeFile().toPath())) return;
-
+        return strBackupFilnavn;
     }
-
-    private Boolean slettAllePostene(){
-
-        // Må gå baklengs gjennom entitetservicene
-        for (int i = entitetservicene.size()-1; i>0;i--) {
-            entitetservicene.get(i).slettAlle();
-        }
-
-        return true;
-    }
-
-    private Boolean importerBackupfilerSomCSV() {
-        CSVImportmester csvImportmester = new CSVImportmester();
-        for (int i= 0; i<entitetservicene.size();i++) {
-            EntitetserviceAktig<?, ?> entityservice = entitetservicene.get(i);
-            Loggekyklop.bruk().loggDEBUG("Importerer rader for " + entityservice.hentEntitetsnavn());
-            String filnavnString = opprettFilnavnForEntitetensTekstfilIZipfil(entityservice);
-            Path tekstfilPath = Filkyklop.hent().finnPathIMappe(hentUnzipmappeFile().toPath(), filnavnString);
-            csvImportmester.importerFraFileTilKjentEntitet(tekstfilPath,entityservice);
-        }
-
-        return true;
-    }
-
-
 
     public boolean pakkutBackupfiler(File file){
         if (file == null) {
@@ -407,46 +353,56 @@ public class Backupkyklop {
     }
 
 
-    public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
-        File destFile = new File(destinationDir, zipEntry.getName());
-
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+    public File hentSisteBackupfilFile(){
+        File[] backupfiler = hentBackupFiler();
+        if (backupfiler.length>0) {
+            return backupfiler[0];
+        } else {
+            return new File("");
         }
 
-        return destFile;
-    }
-
-    public String opprettFilnavnForBackup(String strApplikasjonsNavn){
-        StringBuilder sb = new StringBuilder();
-        sb.append(strApplikasjonsNavn).append("_Backup_");
-        sb.append(Datokyklop.hent().hentDagensDatoTidForFiler());
-        sb.append(".zip");
-        strBackupFilnavn = sb.toString();
-
-        return strBackupFilnavn;
     }
 
 
-    public void leggTilEntitetservice(EntitetserviceAktig<? extends EntitetAktig, ?> entitetservice) {
-        if (entitetservicene == null) {
-            entitetservicene = new ArrayList<>();
-        }
-        if (!entitetservicene.contains(entitetservice)) {
-            entitetservicene.add(entitetservice);
+
+    public String opprettFilnavnForEntitetensTekstfilIZipfil(EntitetserviceAktig<?, ?> entitetservice) {
+        return entitetservice.hentEntitetsnavn() + ".csv";
+    }
+
+
+    public File hentBackupmappeFile(){
+        return Filkyklop.hent().hentEllerOpprettStandardmappe(StandardmappeEnum.BACKUPS);
+    }
+
+
+    public File hentUnzipmappeFile(){
+        return Filkyklop.hent().hentEllerOpprettStandardmappe(StandardmappeEnum.UNZIP);
+    }
+
+
+    public File[] hentBackupFiler(){
+        File backupmappeFile = hentBackupmappeFile();
+        File[] filerEmptyArray = new File[0];
+        if (backupmappeFile==null) {
+            return filerEmptyArray;
+        } else {
+            return Filkyklop.hent().filtrerEtterFilType(backupmappeFile.listFiles(),"zip");
         }
     }
 
-    public ArrayList<Infobit> hentAntallPosterIHverEntitet(){
-        ArrayList<Infobit> infobitene = new ArrayList<>();
-        for (EntitetserviceAktig<? extends EntitetAktig, ?> service: entitetservicene) {
-            infobitene.add(new Infobit(service.hentEntitetsnavn(),service.finnAlle().size() + " poster"));
-        }
-        return infobitene;
+
+// endregion
+
+
+
+// ===========================
+// region Oppdatere liste og håndtere backups
+// ===========================
+
+    private void oppdaterBackupListe(){
+        mainViewMal.oppdaterBackupteksttabell();
     }
+
 
     public ArrayList<ArrayList<String>> hentEntiteterAntallposterSistendret(){
         ArrayList<ArrayList<String>> radene = new ArrayList<>();
@@ -467,6 +423,142 @@ public class Backupkyklop {
 
         return radene;
     }
+
+    public ArrayList<Infobit> getBackupInfobiter() {
+        backuper = new ArrayList<>();
+        File[] filer = hentBackupFiler();
+        if (filer!=null && filer.length>0) {
+            for (File fil:filer) {
+                String strStoerrelse = EnhetskonverteringsMester.presenterFilstoerrelseMenneskelesbart(fil.length());
+                backuper.add(new Infobit(fil.getName(), strStoerrelse));
+            }
+            backuper.sort((o1,o2) -> -1 * o1.getTittel().compareTo(o2.getTittel()));
+        }
+        return backuper;
+    }
+
+
+    public ArrayList<Infobit> hentAntallPosterIHverEntitet(){
+        ArrayList<Infobit> infobitene = new ArrayList<>();
+        for (EntitetserviceAktig<? extends EntitetAktig, ?> service: entitetservicene) {
+            infobitene.add(new Infobit(service.hentEntitetsnavn(),service.finnAlle().size() + " poster"));
+        }
+        return infobitene;
+    }
+
+    public void slettBackupfil(String strFilnavn) {
+        File file = new File(hentBackupmappeFile().getAbsoluteFile()+"/" + strFilnavn);
+        if (!file.exists()) {
+            Notification.show("Fant ingen fil med navnet " + strFilnavn + " i mappen " + hentBackupmappeFile().getName() + ", avbryter.");
+            return;
+        }
+        boolean blnDone = file.delete();
+        if (!blnDone) {
+            Loggekyklop.bruk().loggADVARSEL("Backupfilen " + strFilnavn + " ble ikke slettet likevel.");
+        }
+
+        oppdaterBackupListe();
+    }
+
+    public void restoreBackupfilButtonMethod(String strFilnavn) {
+        File file = new File(hentBackupmappeFile().getAbsoluteFile()+"/" + strFilnavn);
+        if (!file.exists()) {
+            Notification.show("Fant ingen fil med navnet " + strFilnavn + " i mappen " + hentBackupmappeFile().getName() + ", avbryter.");
+            return;
+        }
+
+        if (!pakkutBackupfiler(file)) return;
+        if (!slettAllePostene()) return;
+        if (!importerBackupfilerSomCSV()) return;
+        if (!Filkyklop.hent().slettFileneIMappe(hentUnzipmappeFile().toPath())) return;
+
+    }
+
+// endregion
+
+
+
+// ===========================
+// region Kjør backup
+// ===========================
+
+    private void opprettOgLagreBackupSomZipfil(){
+        ZipOutputStream zipOut;
+
+        try {
+            zipOut = new ZipOutputStream(new FileOutputStream(zipFil));
+        } catch (FileNotFoundException e) {
+            Loggekyklop.bruk().loggFEIL("Feil ved opprettelse av zip-fil: " + e.getMessage() + ", avbryter");
+            return;
+        }
+
+        ZipEntry zipEntry;
+        for (EntitetserviceAktig<? extends EntitetAktig, ?> entitetservice:entitetservicene) {
+            if(!entitetservice.finnAlle().isEmpty()) {
+                try {
+                    zipEntry = new ZipEntry(opprettFilnavnForEntitetensTekstfilIZipfil(entitetservice));
+                    zipOut.putNextEntry(zipEntry);
+                    CSVEksportkyklop.hent().oppdaterFeltliste(entitetservice);
+                    byte[] data = CSVEksportkyklop.hent().hentUtEntiteteneSomTekst(entitetservice).getBytes();
+                    zipOut.write(data);
+                    zipOut.closeEntry();
+                } catch (IOException e) {
+                    Loggekyklop.bruk().loggFEIL("Feil ved opprettelse av zipEntry: " + e.getMessage() + ", går videre");
+                }
+            }
+        }
+        try {
+            zipOut.close();
+        } catch (IOException e) {
+            Loggekyklop.bruk().loggFEIL("Feil ved lukking og lagring av zipFil: " + e.getMessage() + ".");
+        }
+
+        mainViewMal.oppdaterBackupteksttabell();
+    }
+
+// endregion
+
+
+
+// ===========================
+// region Kjør Restore
+// ===========================
+
+
+    private Boolean slettAllePostene(){
+
+        // Må gå baklengs gjennom entitetservicene
+        for (int i = entitetservicene.size()-1; i>0;i--) {
+            entitetservicene.get(i).slettAlle();
+        }
+
+        return true;
+    }
+
+    private Boolean importerBackupfilerSomCSV() {
+        CSVImportmester csvImportmester = new CSVImportmester();
+        for (int i= 0; i<entitetservicene.size();i++) {
+            EntitetserviceAktig<?, ?> entityservice = entitetservicene.get(i);
+            Loggekyklop.bruk().loggDEBUG("Importerer rader for " + entityservice.hentEntitetsnavn());
+            String filnavnString = opprettFilnavnForEntitetensTekstfilIZipfil(entityservice);
+            Path tekstfilPath = Filkyklop.hent().finnPathIMappe(hentUnzipmappeFile().toPath(), filnavnString);
+            csvImportmester.importerFraFileTilKjentEntitet(tekstfilPath,entityservice);
+        }
+
+        return true;
+    }
+
+
+// endregion
+
+
+
+
+// ===========================
+// region Getters and Setters
+// ===========================
+
+
 
 
     public void setBackupsTab(Tab backupsTab) {
@@ -495,12 +587,7 @@ public class Backupkyklop {
     public Backupkyklop() {
     }
 
+// endregion
 
-    public void printEntitetservicer() {
-        System.out.println();
-        System.out.println("ENTITETSERVICENE");
-        for (EntitetserviceAktig<?, ?> entitetserviceAktig:entitetservicene) {
-            Loggekyklop.bruk().loggDEBUG("Entitetservice " + entitetserviceAktig.hentEntitetsnavn());
-        }
-    }
+
 }

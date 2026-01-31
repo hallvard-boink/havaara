@@ -6,9 +6,8 @@ import com.vaadin.flow.component.grid.HeaderRow;
 import java.util.List;
 
 /**
- * Denne bør erstattes med HallvardsGrid
+ * Denne bør erstattes med HallvardsGrid fra versjon 2.0 og fremover
  */
-@Deprecated
 public class Gridkyklop {
     private static Gridkyklop gridkyklop;
 
